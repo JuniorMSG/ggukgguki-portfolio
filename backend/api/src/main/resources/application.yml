@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: ggukgguki-api
+  datasource:
+    url: jdbc:mysql://localhost:3306/ggukgguki?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+    username: ggukgguki
+    password: ggukgguki
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+server:
+  port: 8080
