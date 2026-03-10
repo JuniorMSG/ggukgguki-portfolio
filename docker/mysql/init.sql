@@ -112,3 +112,25 @@ CREATE TABLE passive_income (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (holding_id) REFERENCES holding(id)
 ) COMMENT '배당금/이자 기록';
+
+-- ========================================
+-- 초기 데이터
+-- ========================================
+
+-- 유저
+INSERT INTO users (email, nickname) VALUES ('milk6645@gmail.com', 'MSG');
+
+-- 계좌 (5:4:0:1 전략, 주 100만원)
+INSERT INTO account (user_id, name, account_type, annual_limit) VALUES
+(1, '연금저축1', 'PENSION_SAVINGS', 6000000),
+(1, '연금저축2', 'PENSION_SAVINGS', 9000000),
+(1, 'IRP',      'IRP',             3000000),
+(1, 'ISA',      'ISA',             20000000),
+(1, '해외계좌',  'OVERSEAS',        NULL);
+
+-- 자산군 (목표 비중: 성장 50%, 배당성장 40%, 현금 10%)
+INSERT INTO asset_class (name, target_ratio, display_order) VALUES
+('성장',     50.00, 1),
+('배당성장',  40.00, 2),
+('채권',      0.00, 3),
+('현금',     10.00, 4);
