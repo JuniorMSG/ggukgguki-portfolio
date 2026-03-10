@@ -4,8 +4,10 @@ import com.ggukgguki.api.dto.AllocationResult
 import com.ggukgguki.api.dto.AllocationSetRequest
 import com.ggukgguki.api.dto.AssetClassResult
 import com.ggukgguki.api.service.AssetClassService
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.*
 
+@Tag(name = "AssetClass", description = "자산군 마스터 + 유저별 비중")
 @RestController
 @RequestMapping("/api/asset-classes")
 class AssetClassController(

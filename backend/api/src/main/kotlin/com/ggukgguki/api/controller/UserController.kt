@@ -3,9 +3,11 @@ package com.ggukgguki.api.controller
 import com.ggukgguki.api.dto.UserCreateRequest
 import com.ggukgguki.api.dto.UserResult
 import com.ggukgguki.api.service.UserService
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
+@Tag(name = "User", description = "유저 관리")
 @RestController
 @RequestMapping("/api/users")
 class UserController(

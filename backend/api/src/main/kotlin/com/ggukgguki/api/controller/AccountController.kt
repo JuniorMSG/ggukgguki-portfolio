@@ -3,9 +3,11 @@ package com.ggukgguki.api.controller
 import com.ggukgguki.api.dto.AccountCreateRequest
 import com.ggukgguki.api.dto.AccountResult
 import com.ggukgguki.api.service.AccountService
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
+@Tag(name = "Account", description = "계좌 관리")
 @RestController
 @RequestMapping("/api/accounts")
 class AccountController(
