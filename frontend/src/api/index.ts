@@ -1,4 +1,4 @@
-import type { Account, DcaRecord } from '../types'
+import type { Account, AssetClass, DcaRecord } from '../types'
 
 const BASE = '/api'
 
@@ -14,6 +14,18 @@ export const accountApi = {
 
   create: (data: { userId: number; name: string; accountType: string; annualLimit?: number }) =>
     fetchJson<Account>(`${BASE}/accounts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }),
+}
+
+export const assetClassApi = {
+  getAll: () =>
+    fetchJson<AssetClass[]>(`${BASE}/asset-classes`),
+
+  create: (data: { name: string; targetRatio?: number; displayOrder?: number }) =>
+    fetchJson<AssetClass>(`${BASE}/asset-classes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),

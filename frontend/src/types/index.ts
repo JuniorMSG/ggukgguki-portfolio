@@ -9,6 +9,22 @@ export interface Account {
   isActive: boolean
 }
 
+export interface AssetClass {
+  id: number
+  name: string
+  targetRatio: number | null
+  displayOrder: number
+}
+
+export interface Holding {
+  id: number
+  accountId: number
+  assetClassId: number
+  ticker: string
+  name: string
+  currency: string
+}
+
 export interface DcaRecord {
   id: number
   accountId: number

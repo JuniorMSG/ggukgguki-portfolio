@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import AccountList from './components/AccountList'
+import AccountForm from './components/AccountForm'
+import AssetRatioChart from './components/AssetRatioChart'
 import DcaForm from './components/DcaForm'
 import DcaHistory from './components/DcaHistory'
 
@@ -22,7 +24,9 @@ function App() {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+        <AssetRatioChart />
         <AccountList userId={USER_ID} refreshKey={refreshKey} />
+        <AccountForm userId={USER_ID} onCreated={handleRefresh} />
         <DcaForm userId={USER_ID} onCreated={handleRefresh} />
         <DcaHistory refreshKey={refreshKey} />
       </main>
