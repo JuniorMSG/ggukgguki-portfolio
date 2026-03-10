@@ -34,6 +34,28 @@ export interface Holding {
   currency: string
 }
 
+export type FlowType = 'INCOME' | 'EXPENSE'
+
+export interface CashflowCategory {
+  id: number
+  name: string
+  flowType: FlowType
+  parentId: number | null
+  displayOrder: number
+}
+
+export interface CashflowRecord {
+  id: number
+  userId: number
+  categoryId: number
+  categoryName: string
+  flowType: FlowType
+  parentName: string | null
+  amount: number
+  recordDate: string
+  memo: string | null
+}
+
 export interface DcaRecord {
   id: number
   accountId: number

@@ -1,4 +1,4 @@
-import type { Account, Allocation, AssetClass, DcaRecord } from '../types'
+import type { Account, Allocation, AssetClass, CashflowCategory, CashflowRecord, DcaRecord } from '../types'
 
 const BASE = '/api'
 
@@ -47,6 +47,21 @@ export const dcaApi = {
 
   create: (data: { accountId: number; amount: number; recordDate: string; memo?: string }) =>
     fetchJson<DcaRecord>(`${BASE}/dca`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }),
+}
+
+export const cashflowApi = {
+  getCategories: () =>
+    fetchJson<CashflowCategory[]>(`${BASE}/cashflow/categories`),
+
+  getRecords: (userId: number, startDate: string, endDate: string) =>
+    fetchJson<CashflowRecord[]>(`${BASE}/cashflow/records?userId=${userId}&startDate=${startDate}&endDate=${endDate}`),
+
+  create: (data: { userId: number; categoryId: number; amount: number; recordDate: string; memo?: string }) =>
+    fetchJson<CashflowRecord>(`${BASE}/cashflow/records`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),

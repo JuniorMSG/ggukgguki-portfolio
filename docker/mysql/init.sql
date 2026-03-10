@@ -126,6 +126,30 @@ CREATE TABLE passive_income (
     FOREIGN KEY (holding_id) REFERENCES holding(id)
 ) COMMENT '배당금/이자 기록';
 
+-- 수입/지출 카테고리 (계층형)
+CREATE TABLE cashflow_category (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    parent_id BIGINT DEFAULT NULL COMMENT '상위 카테고리 (NULL=대분류)',
+    name VARCHAR(50) NOT NULL COMMENT '카테고리명',
+    flow_type VARCHAR(10) NOT NULL COMMENT 'INCOME / EXPENSE',
+    display_order INT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (parent_id) REFERENCES cashflow_category(id)
+) COMMENT '수입/지출 카테고리';
+
+-- 수입/지출 기록
+CREATE TABLE cashflow_record (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    category_id BIGINT NOT NULL,
+    amount BIGINT NOT NULL COMMENT '금액 (원)',
+    record_date DATE NOT NULL COMMENT '기록일',
+    memo VARCHAR(200) DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (category_id) REFERENCES cashflow_category(id)
+) COMMENT '수입/지출 기록';
+
 -- ========================================
 -- 초기 데이터
 -- ========================================
@@ -166,3 +190,26 @@ INSERT INTO user_asset_allocation (user_id, asset_class_id, target_ratio) VALUES
 (1, 11, 50.00),
 (1, 12, 40.00),
 (1,  4, 10.00);
+
+-- 수입 카테고리
+INSERT INTO cashflow_category (id, parent_id, name, flow_type, display_order) VALUES
+(100, NULL, '수입', 'INCOME', 1),
+(101, 100, '급여',     'INCOME', 1),
+(102, 100, '부수입',    'INCOME', 2),
+(103, 100, '상여금',    'INCOME', 3);
+
+-- 지출 카테고리
+INSERT INTO cashflow_category (id, parent_id, name, flow_type, display_order) VALUES
+(200, NULL, '고정비', 'EXPENSE', 1),
+(201, 200, '보험',    'EXPENSE', 1),
+(202, 200, '구독료',  'EXPENSE', 2),
+(203, 200, '통신비',  'EXPENSE', 3),
+(204, 200, '교통비',  'EXPENSE', 4),
+(205, 200, '주거비',  'EXPENSE', 5),
+(300, NULL, '생활비', 'EXPENSE', 2),
+(301, 300, '식비',    'EXPENSE', 1),
+(302, 300, '쇼핑',    'EXPENSE', 2),
+(303, 300, '여가',    'EXPENSE', 3),
+(400, NULL, '비상금', 'EXPENSE', 3),
+(401, 400, '의료비',  'EXPENSE', 1),
+(402, 400, '경조사',  'EXPENSE', 2);
