@@ -60,6 +60,11 @@ cd frontend && npm run dev
 - **YAGNI**: 지금 필요하지 않은 기능은 미리 만들지 않는다
 - 파일 하나가 150줄 넘어가면 분리 검토
 
+### 작업 흐름
+- 작업 시작 전 → 기획서 로드맵(`../msg-ai-context/plans/side-project-asset-saas.md`)에 할 일 추가
+- 작업 완료 후 → 로드맵 체크리스트 업데이트 (`[ ]` → `[x]`)
+- 빠뜨리지 않는다
+
 ### API 문서화
 - API 작업 시 Swagger 문서도 함께 작성한다 (빠뜨리지 않는다)
 - Controller: `@Tag` + `@Operation(summary, description)`
