@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.*
 class AccountController(
     private val accountService: AccountService
 ) {
-    @GetMapping
-    fun getAll(): List<AccountResult> = accountService.getAll()
+    @GetMapping(params = ["userId"])
+    fun getByUserId(@RequestParam userId: Long): List<AccountResult> = accountService.getByUserId(userId)
 
     @GetMapping("/{id}")
     fun getById(@PathVariable id: Long): AccountResult = accountService.getById(id)

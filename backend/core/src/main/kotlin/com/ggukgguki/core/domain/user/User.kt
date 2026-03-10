@@ -1,30 +1,20 @@
-package com.ggukgguki.core.domain.account
+package com.ggukgguki.core.domain.user
 
-import com.ggukgguki.core.domain.user.User
-import com.ggukgguki.core.enums.AccountType
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "account")
-class Account(
+@Table(name = "users")
+class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    val user: User,
+    @Column(nullable = false, unique = true, length = 100)
+    var email: String,
 
     @Column(nullable = false, length = 50)
-    var name: String,
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "account_type", nullable = false, length = 30)
-    var accountType: AccountType,
-
-    @Column(name = "annual_limit")
-    var annualLimit: Long? = null,
+    var nickname: String,
 
     @Column(name = "is_active", nullable = false)
     var isActive: Boolean = true,

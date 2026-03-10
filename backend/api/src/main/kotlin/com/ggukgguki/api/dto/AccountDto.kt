@@ -4,6 +4,7 @@ import com.ggukgguki.core.domain.account.Account
 import com.ggukgguki.core.enums.AccountType
 
 data class AccountCreateRequest(
+    val userId: Long,
     val name: String,
     val accountType: AccountType,
     val annualLimit: Long? = null
@@ -11,6 +12,7 @@ data class AccountCreateRequest(
 
 data class AccountResult(
     val id: Long,
+    val userId: Long,
     val name: String,
     val accountType: AccountType,
     val annualLimit: Long?,
@@ -19,6 +21,7 @@ data class AccountResult(
     companion object {
         fun from(account: Account) = AccountResult(
             id = account.id,
+            userId = account.user.id,
             name = account.name,
             accountType = account.accountType,
             annualLimit = account.annualLimit,

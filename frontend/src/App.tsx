@@ -1,34 +1,32 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import AccountList from './components/AccountList'
+import DcaForm from './components/DcaForm'
+import DcaHistory from './components/DcaHistory'
+
+const USER_ID = 1 // TODO: 로그인 구현 후 동적으로
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  const handleRefresh = () => setRefreshKey((k) => k + 1)
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow-sm border-b border-gray-100">
+        <div className="max-w-2xl mx-auto px-4 py-4">
+          <h1 className="text-2xl font-bold text-gray-800">
+            꾹꾹이
+            <span className="ml-2 text-sm font-normal text-gray-400">매주 꾹꾹 눌러서 기록하는 포트폴리오</span>
+          </h1>
+        </div>
+      </header>
+
+      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+        <AccountList userId={USER_ID} refreshKey={refreshKey} />
+        <DcaForm userId={USER_ID} onCreated={handleRefresh} />
+        <DcaHistory refreshKey={refreshKey} />
+      </main>
+    </div>
   )
 }
 

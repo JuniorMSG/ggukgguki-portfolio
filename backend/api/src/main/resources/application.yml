@@ -2,13 +2,13 @@ spring:
   application:
     name: ggukgguki-api
   datasource:
-    url: jdbc:mysql://localhost:3306/ggukgguki?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+    url: jdbc:mysql://localhost:3307/ggukgguki?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
     username: ggukgguki
     password: ggukgguki
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
