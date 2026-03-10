@@ -60,6 +60,11 @@ cd frontend && npm run dev
 - **YAGNI**: 지금 필요하지 않은 기능은 미리 만들지 않는다
 - 파일 하나가 150줄 넘어가면 분리 검토
 
+### API 문서화
+- API 작업 시 Swagger 문서도 함께 작성한다 (빠뜨리지 않는다)
+- Controller: `@Tag` + `@Operation(summary, description)`
+- DTO: `@Schema(description, example)`
+
 ### DDD 적용 기준
 - 도메인별 패키지 분리 (Aggregate 단위)
 - Entity와 VO 구분: 금액/비중 같은 값은 VO 검토
