@@ -1,7 +1,6 @@
 package com.ggukgguki.core.domain.holding
 
 import jakarta.persistence.*
-import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Entity
@@ -11,18 +10,16 @@ class AssetClass(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    val parent: AssetClass? = null,
+
     @Column(nullable = false, length = 50)
     var name: String,
-
-    @Column(name = "target_ratio")
-    var targetRatio: BigDecimal? = null,
 
     @Column(name = "display_order", nullable = false)
     var displayOrder: Int = 0,
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-
-    @Column(name = "updated_at", nullable = false)
-    var updatedAt: LocalDateTime = LocalDateTime.now()
+    val createdAt: LocalDateTime = LocalDateTime.now()
 )

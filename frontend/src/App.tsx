@@ -24,7 +24,7 @@ function App() {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        <AssetRatioChart />
+        <AssetRatioChart userId={USER_ID} />
         <AccountList userId={USER_ID} refreshKey={refreshKey} />
         <AccountForm userId={USER_ID} onCreated={handleRefresh} />
         <DcaForm userId={USER_ID} onCreated={handleRefresh} />

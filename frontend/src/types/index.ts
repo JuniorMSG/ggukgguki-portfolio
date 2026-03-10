@@ -12,8 +12,17 @@ export interface Account {
 export interface AssetClass {
   id: number
   name: string
-  targetRatio: number | null
+  parentId: number | null
   displayOrder: number
+}
+
+export interface Allocation {
+  id: number
+  userId: number
+  assetClassId: number
+  assetClassName: string
+  parentName: string | null
+  targetRatio: number
 }
 
 export interface Holding {

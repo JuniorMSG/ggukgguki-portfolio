@@ -25,15 +25,28 @@ CREATE TABLE account (
     FOREIGN KEY (user_id) REFERENCES users(id)
 ) COMMENT '계좌';
 
--- 자산군
+-- 자산군 (계층형: 대분류/소분류)
 CREATE TABLE asset_class (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(50) NOT NULL COMMENT '자산군명 (성장, 배당, 채권, 현금)',
-    target_ratio DECIMAL(5,2) DEFAULT NULL COMMENT '목표 비중 (%)',
+    parent_id BIGINT DEFAULT NULL COMMENT '상위 자산군 (NULL=대분류)',
+    name VARCHAR(50) NOT NULL COMMENT '자산군명',
     display_order INT NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) COMMENT '자산군';
+    FOREIGN KEY (parent_id) REFERENCES asset_class(id)
+) COMMENT '자산군 마스터';
+
+-- 유저별 자산 비중 설정
+CREATE TABLE user_asset_allocation (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    asset_class_id BIGINT NOT NULL,
+    target_ratio DECIMAL(5,2) NOT NULL DEFAULT 0 COMMENT '목표 비중 (%)',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (asset_class_id) REFERENCES asset_class(id),
+    UNIQUE KEY uk_user_asset (user_id, asset_class_id)
+) COMMENT '유저별 자산 배분';
 
 -- 종목
 CREATE TABLE holding (
@@ -128,9 +141,28 @@ INSERT INTO account (user_id, name, account_type, annual_limit) VALUES
 (1, 'ISA',      'ISA',             20000000),
 (1, '해외계좌',  'OVERSEAS',        NULL);
 
--- 자산군 (목표 비중: 성장 50%, 배당성장 40%, 현금 10%)
-INSERT INTO asset_class (name, target_ratio, display_order) VALUES
-('성장',     50.00, 1),
-('배당성장',  40.00, 2),
-('채권',      0.00, 3),
-('현금',     10.00, 4);
+-- 자산군 마스터 (대분류)
+INSERT INTO asset_class (id, parent_id, name, display_order) VALUES
+(1, NULL, '주식',   1),
+(2, NULL, '채권',   2),
+(3, NULL, '원자재', 3),
+(4, NULL, '현금',   4);
+
+-- 자산군 마스터 (소분류)
+INSERT INTO asset_class (id, parent_id, name, display_order) VALUES
+(11, 1, '성장주',    1),
+(12, 1, '배당성장주', 2),
+(13, 1, '배당주',    3),
+(14, 1, '리츠',     4),
+(21, 2, '국채',     1),
+(22, 2, '회사채',    2),
+(31, 3, '금',       1),
+(32, 3, '은',       2),
+(41, 4, '예금',     1),
+(42, 4, 'MMF',     2);
+
+-- MSG 자산 배분 (5:4:0:1 전략)
+INSERT INTO user_asset_allocation (user_id, asset_class_id, target_ratio) VALUES
+(1, 11, 50.00),
+(1, 12, 40.00),
+(1,  4, 10.00);

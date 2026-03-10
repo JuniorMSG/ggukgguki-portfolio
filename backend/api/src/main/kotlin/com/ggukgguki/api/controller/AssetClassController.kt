@@ -1,9 +1,9 @@
 package com.ggukgguki.api.controller
 
-import com.ggukgguki.api.dto.AssetClassCreateRequest
+import com.ggukgguki.api.dto.AllocationResult
+import com.ggukgguki.api.dto.AllocationSetRequest
 import com.ggukgguki.api.dto.AssetClassResult
 import com.ggukgguki.api.service.AssetClassService
-import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -12,10 +12,20 @@ class AssetClassController(
     private val assetClassService: AssetClassService
 ) {
     @GetMapping
-    fun getAll(): List<AssetClassResult> = assetClassService.getAll()
+    fun getAll(): List<AssetClassResult> = assetClassService.getAllAssetClasses()
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    fun create(@RequestBody request: AssetClassCreateRequest): AssetClassResult =
-        assetClassService.create(request)
+    @GetMapping("/categories")
+    fun getCategories(): List<AssetClassResult> = assetClassService.getCategories()
+
+    @GetMapping("/categories/{parentId}/children")
+    fun getSubCategories(@PathVariable parentId: Long): List<AssetClassResult> =
+        assetClassService.getSubCategories(parentId)
+
+    @GetMapping("/allocations")
+    fun getAllocations(@RequestParam userId: Long): List<AllocationResult> =
+        assetClassService.getAllocationsByUser(userId)
+
+    @PutMapping("/allocations")
+    fun setAllocations(@RequestBody request: AllocationSetRequest): List<AllocationResult> =
+        assetClassService.setAllocations(request)
 }
