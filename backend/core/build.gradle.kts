@@ -1,9 +1,16 @@
-// core: 순수 도메인 모듈 (외부 의존 없음)
+// core: 도메인 모듈 (엔티티 + Repository 인터페이스)
 plugins {
     kotlin("plugin.jpa")
+    id("io.spring.dependency-management")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.boot:spring-boot-dependencies:3.3.5")
+    }
 }
 
 dependencies {
-    // JPA 엔티티 정의용 (구현체 아닌 API만)
-    compileOnly("jakarta.persistence:jakarta.persistence-api:3.1.0")
+    api("jakarta.persistence:jakarta.persistence-api")
+    api("org.springframework.data:spring-data-jpa")
 }
