@@ -27,3 +27,9 @@ redis-data/
 # Env
 .env
 .env.local
+
+# DB 백업 (로컬 전용)
+backup/
+
+# 마이그레이션 스크립트 (개인정보 포함: 시트 ID, 서비스 계정 경로)
+scripts/migrate_from_sheets.py

@@ -155,7 +155,7 @@ CREATE TABLE cashflow_record (
 -- ========================================
 
 -- 유저
-INSERT INTO users (email, nickname) VALUES ('milk6645@gmail.com', 'MSG');
+INSERT INTO users (email, nickname) VALUES ('user@example.com', 'MSG');
 
 -- 계좌 (5:4:0:1 전략, 주 100만원)
 INSERT INTO account (user_id, name, account_type, annual_limit) VALUES
