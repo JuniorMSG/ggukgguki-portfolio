@@ -34,4 +34,9 @@ class CashflowController(
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody request: CashflowCreateRequest): CashflowRecordResult =
         cashflowService.create(request)
+
+    @Operation(summary = "수입/지출 기록 삭제", description = "수입/지출 기록을 삭제합니다")
+    @DeleteMapping("/records/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun delete(@PathVariable id: Long) = cashflowService.delete(id)
 }

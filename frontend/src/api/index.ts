@@ -51,6 +51,9 @@ export const dcaApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     }),
+
+  delete: (id: number) =>
+    fetch(`${BASE}/dca/${id}`, { method: 'DELETE' }),
 }
 
 export const cashflowApi = {
@@ -66,4 +69,7 @@ export const cashflowApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     }),
+
+  delete: (id: number) =>
+    fetch(`${BASE}/cashflow/records/${id}`, { method: 'DELETE' }),
 }

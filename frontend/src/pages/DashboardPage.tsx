@@ -42,7 +42,7 @@ export default function DashboardPage() {
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
           <p className="text-sm text-gray-500">{year}년 투자</p>
-          <p className="text-2xl font-bold text-blue-600">{(totalInvested / 10000).toLocaleString()}만</p>
+          <p className="text-2xl font-bold text-blue-600">{totalInvested.toLocaleString()}원</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
           <p className="text-sm text-gray-500">한도 소진</p>
@@ -102,8 +102,8 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   <span className="text-sm text-gray-600">
-                    {(invested / 10000).toLocaleString()}만
-                    {limit ? <span className="text-gray-400"> / {(limit / 10000).toLocaleString()}만</span> : null}
+                    {invested.toLocaleString()}원
+                    {limit ? <span className="text-gray-400"> / {limit.toLocaleString()}원</span> : null}
                   </span>
                 </div>
                 {limit ? (

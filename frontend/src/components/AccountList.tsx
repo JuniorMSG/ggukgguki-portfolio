@@ -37,7 +37,7 @@ export default function AccountList({ userId, refreshKey }: Props) {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-800">계좌 현황</h2>
         <div className="text-sm text-gray-500">
-          {year}년 총 투자: <span className="font-semibold text-blue-600">{(totalInvested / 10000).toLocaleString()}만원</span>
+          {year}년 총 투자: <span className="font-semibold text-blue-600">{totalInvested.toLocaleString()}원</span>
         </div>
       </div>
 
@@ -61,10 +61,10 @@ export default function AccountList({ userId, refreshKey }: Props) {
                   </div>
                   <div className="text-right text-sm">
                     <span className="font-semibold text-gray-700">
-                      {(invested / 10000).toLocaleString()}만원
+                      {invested.toLocaleString()}원
                     </span>
                     {limit ? (
-                      <span className="text-gray-400"> / {(limit / 10000).toLocaleString()}만원</span>
+                      <span className="text-gray-400"> / {limit.toLocaleString()}원</span>
                     ) : null}
                   </div>
                 </div>

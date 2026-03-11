@@ -53,11 +53,11 @@ export default function AccountsPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-xl font-bold text-gray-800">
-                    {(invested / 10000).toLocaleString()}만원
+                    {invested.toLocaleString()}원
                   </p>
                   {limit && (
                     <p className="text-sm text-gray-400">
-                      한도 {(limit / 10000).toLocaleString()}만원
+                      한도 {limit.toLocaleString()}원
                     </p>
                   )}
                 </div>
@@ -76,14 +76,14 @@ export default function AccountsPage() {
                   </div>
                   <div className="flex justify-between text-xs text-gray-400">
                     <span>{Math.round(ratio)}% 소진</span>
-                    <span>잔여 {((remaining || 0) / 10000).toLocaleString()}만원</span>
+                    <span>잔여 {(remaining || 0).toLocaleString()}원</span>
                   </div>
                 </>
               ) : null}
 
               <div className="mt-3 pt-3 border-t border-gray-50 flex gap-4 text-xs text-gray-400">
                 <span>올해 {count}회 입금</span>
-                {count > 0 && <span>평균 {(invested / count / 10000).toLocaleString()}만원/회</span>}
+                {count > 0 && <span>평균 {Math.round(invested / count).toLocaleString()}원/회</span>}
               </div>
             </div>
           )

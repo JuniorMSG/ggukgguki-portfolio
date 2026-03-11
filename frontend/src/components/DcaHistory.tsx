@@ -31,7 +31,7 @@ export default function DcaHistory({ refreshKey }: Props) {
               {r.memo && <span className="ml-2 text-gray-400">{r.memo}</span>}
             </div>
             <span className="text-sm font-medium text-gray-700">
-              {(r.amount / 10000).toLocaleString()}만원
+              {r.amount.toLocaleString()}원
             </span>
           </div>
         ))}

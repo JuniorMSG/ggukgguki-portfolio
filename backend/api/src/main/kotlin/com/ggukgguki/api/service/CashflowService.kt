@@ -42,4 +42,12 @@ class CashflowService(
         )
         return CashflowRecordResult.from(recordRepository.save(record))
     }
+
+    @Transactional
+    fun delete(id: Long) {
+        if (!recordRepository.existsById(id)) {
+            throw IllegalArgumentException("기록을 찾을 수 없어요: $id")
+        }
+        recordRepository.deleteById(id)
+    }
 }

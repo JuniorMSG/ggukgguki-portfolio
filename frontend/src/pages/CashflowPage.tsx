@@ -41,6 +41,12 @@ export default function CashflowPage() {
       return acc
     }, {})
 
+  const handleDelete = async (id: number) => {
+    if (!confirm('삭제할까요?')) return
+    await cashflowApi.delete(id)
+    setRefreshKey((k) => k + 1)
+  }
+
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold text-gray-800">수입/지출</h2>
@@ -49,15 +55,15 @@ export default function CashflowPage() {
       <div className="grid grid-cols-4 gap-3">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
           <p className="text-xs text-gray-400">수입</p>
-          <p className="text-lg font-bold text-blue-600">{(totalIncome / 10000).toLocaleString()}만</p>
+          <p className="text-lg font-bold text-blue-600">{totalIncome.toLocaleString()}원</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
           <p className="text-xs text-gray-400">지출</p>
-          <p className="text-lg font-bold text-red-500">{(totalExpense / 10000).toLocaleString()}만</p>
+          <p className="text-lg font-bold text-red-500">{totalExpense.toLocaleString()}원</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
           <p className="text-xs text-gray-400">투자 가능</p>
-          <p className="text-lg font-bold text-green-600">{(investable / 10000).toLocaleString()}만</p>
+          <p className="text-lg font-bold text-green-600">{investable.toLocaleString()}원</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
           <p className="text-xs text-gray-400">저축률</p>
@@ -79,7 +85,7 @@ export default function CashflowPage() {
                     <div className="flex justify-between text-sm mb-1">
                       <span className="text-gray-600">{name}</span>
                       <span className="text-gray-700 font-medium">
-                        {(amount / 10000).toLocaleString()}만원
+                        {amount.toLocaleString()}원
                         <span className="text-gray-400 ml-1">({Math.round(ratio)}%)</span>
                       </span>
                     </div>
@@ -116,9 +122,17 @@ export default function CashflowPage() {
                   <span className="ml-1 text-gray-600">{r.categoryName}</span>
                   {r.memo && <span className="ml-2 text-gray-400">{r.memo}</span>}
                 </div>
-                <span className={`text-sm font-medium ${r.flowType === 'INCOME' ? 'text-blue-600' : 'text-red-500'}`}>
-                  {r.flowType === 'INCOME' ? '+' : '-'}{(r.amount / 10000).toLocaleString()}만
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-sm font-medium ${r.flowType === 'INCOME' ? 'text-blue-600' : 'text-red-500'}`}>
+                    {r.flowType === 'INCOME' ? '+' : '-'}{r.amount.toLocaleString()}원
+                  </span>
+                  <button
+                    onClick={() => handleDelete(r.id)}
+                    className="text-gray-300 hover:text-red-400 text-xs"
+                  >
+                    x
+                  </button>
+                </div>
               </div>
             ))}
           </div>

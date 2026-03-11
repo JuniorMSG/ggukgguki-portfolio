@@ -26,4 +26,9 @@ class DcaController(
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody request: DcaCreateRequest): DcaResult = dcaService.create(request)
+
+    @Operation(summary = "DCA 기록 삭제", description = "적립식 투자 기록을 삭제합니다")
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun delete(@PathVariable id: Long) = dcaService.delete(id)
 }

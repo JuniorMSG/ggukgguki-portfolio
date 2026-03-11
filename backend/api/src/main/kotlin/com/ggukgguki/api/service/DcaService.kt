@@ -39,4 +39,12 @@ class DcaService(
         )
         return DcaResult.from(dcaRecordRepository.save(record))
     }
+
+    @Transactional
+    fun delete(id: Long) {
+        if (!dcaRecordRepository.existsById(id)) {
+            throw IllegalArgumentException("DCA 기록을 찾을 수 없어요: $id")
+        }
+        dcaRecordRepository.deleteById(id)
+    }
 }
