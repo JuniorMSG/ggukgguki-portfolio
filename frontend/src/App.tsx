@@ -5,6 +5,9 @@ import AccountsPage from './pages/AccountsPage'
 import AssetsPage from './pages/AssetsPage'
 import DcaPage from './pages/DcaPage'
 import CashflowPage from './pages/CashflowPage'
+import TaxSimPage from './pages/TaxSimPage'
+import SalaryCalcPage from './pages/SalaryCalcPage'
+import FreelancerCalcPage from './pages/FreelancerCalcPage'
 
 function App() {
   return (
@@ -18,6 +21,9 @@ function App() {
             <Route path="/assets" element={<AssetsPage />} />
             <Route path="/dca" element={<DcaPage />} />
             <Route path="/cashflow" element={<CashflowPage />} />
+            <Route path="/tax" element={<TaxSimPage />} />
+            <Route path="/salary" element={<SalaryCalcPage />} />
+            <Route path="/freelancer" element={<FreelancerCalcPage />} />
           </Routes>
         </main>
       </div>
