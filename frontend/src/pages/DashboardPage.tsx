@@ -186,7 +186,7 @@ function TotalAssetTab({ accounts, holdings, allocations, totalInvested, totalHo
                   </div>
                 </div>
                 {limit && (
-                  <div className="w-full bg-gray-100 rounded-full h-1.5 ml-5">
+                  <div className="bg-gray-100 rounded-full h-1.5 ml-5 overflow-hidden" style={{ width: 'calc(100% - 1.25rem)' }}>
                     <div className="h-1.5 rounded-full transition-all"
                       style={{ width: `${ratio}%`, backgroundColor: ratio >= 100 ? '#10b981' : '#3b82f6' }} />
                   </div>
