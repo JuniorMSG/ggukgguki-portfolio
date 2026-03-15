@@ -27,10 +27,13 @@ export default function DashboardPage() {
   const [snapshots, setSnapshots] = useState<WeeklySnapshot[]>([])
 
   const now = new Date()
-  const year = now.getFullYear()
-  const month = now.getMonth() + 1
+  const currentYear = now.getFullYear()
+  const [selectedYear, setSelectedYear] = useState(currentYear)
+  const year = selectedYear
+  const month = selectedYear === currentYear ? now.getMonth() + 1 : 12
   const monthStart = `${year}-${String(month).padStart(2, '0')}-01`
   const monthEnd = new Date(year, month, 0).toISOString().split('T')[0]
+  const yearOptions = Array.from({ length: currentYear - 2018 }, (_, i) => currentYear - i)
 
   useEffect(() => {
     accountApi.getByUserId(USER_ID).then(setAccounts)
@@ -53,16 +56,22 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* 탭 */}
-      <div className="flex gap-2">
-        {TABS.map((t) => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === t ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-            }`}>
-            {t}
-          </button>
-        ))}
+      {/* 탭 + 연도 선택 */}
+      <div className="flex items-center justify-between">
+        <div className="flex gap-2">
+          {TABS.map((t) => (
+            <button key={t} onClick={() => setTab(t)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                tab === t ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+              }`}>
+              {t}
+            </button>
+          ))}
+        </div>
+        <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+          {yearOptions.map((y) => <option key={y} value={y}>{y}년</option>)}
+        </select>
       </div>
 
       {tab === '총자산' && (
@@ -79,7 +88,7 @@ export default function DashboardPage() {
         />
       )}
       {tab === '주간추이' && (
-        <SnapshotTab snapshots={snapshots} />
+        <SnapshotTab snapshots={snapshots} year={year} />
       )}
       {tab === '수입/지출' && (
         <CashflowTab
@@ -507,18 +516,15 @@ function CashflowTab({ cashRecords, yearCashRecords, year, month }: {
 }
 
 // ─── 주간추이 탭 ───
-function SnapshotTab({ snapshots }: { snapshots: WeeklySnapshot[] }) {
-  const currentYear = new Date().getFullYear()
-  const [selectedYear, setSelectedYear] = useState(currentYear)
-  const years = [...new Set(snapshots.map((s) => new Date(s.startDate).getFullYear()))].sort()
-  const filtered = snapshots.filter((s) => new Date(s.startDate).getFullYear() === selectedYear).sort((a, b) => a.startDate.localeCompare(b.startDate))
+function SnapshotTab({ snapshots, year }: { snapshots: WeeklySnapshot[]; year: number }) {
+  const filtered = snapshots.filter((s) => new Date(s.startDate).getFullYear() === year).sort((a, b) => a.startDate.localeCompare(b.startDate))
   const latest = filtered[filtered.length - 1]
   const first = filtered[0]
   const fmtM = (n: number) => { if (Math.abs(n) >= 1e8) return `${(n/1e8).toFixed(1)}억`; if (Math.abs(n) >= 1e4) return `${Math.round(n/1e4).toLocaleString()}만`; return n.toLocaleString() }
 
   return (
     <>
-      <div className="flex gap-2">{years.map((y) => (<button key={y} onClick={() => setSelectedYear(y)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${selectedYear === y ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>{y}년</button>))}</div>
+      {/* 연도는 상단 공통 선택 사용 */}
       {latest && (<div className="grid grid-cols-4 gap-3">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center"><p className="text-xs text-gray-400">자본 총액</p><p className="text-lg font-bold text-gray-800">{fmtM(latest.totalCapital)}</p></div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center"><p className="text-xs text-gray-400">투자 자산</p><p className="text-lg font-bold text-blue-600">{fmtM(latest.totalInvestment)}</p></div>
@@ -526,7 +532,7 @@ function SnapshotTab({ snapshots }: { snapshots: WeeklySnapshot[] }) {
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center"><p className="text-xs text-gray-400">배당 (누적)</p><p className="text-lg font-bold text-gray-800">{fmtM(latest.totalDividend)}</p></div>
       </div>)}
       {filtered.length > 0 && (<div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <h3 className="font-medium text-gray-700 mb-3">{selectedYear}년 주간 추이 <span className="text-gray-400 text-sm font-normal">({filtered.length}주)</span></h3>
+        <h3 className="font-medium text-gray-700 mb-3">{year}년 주간 추이 <span className="text-gray-400 text-sm font-normal">({filtered.length}주)</span></h3>
         <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
           <table className="w-full text-xs"><thead className="sticky top-0 bg-white"><tr className="text-gray-400 border-b border-gray-200">
             <th className="py-2 text-left font-medium">주차</th><th className="py-2 text-right font-medium">자본총액</th><th className="py-2 text-right font-medium">투자자산</th>
@@ -547,7 +553,7 @@ function SnapshotTab({ snapshots }: { snapshots: WeeklySnapshot[] }) {
         </div>
       </div>)}
       {latest && first && (<div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <h3 className="font-medium text-gray-700 mb-3">{selectedYear}년 계좌별 변화</h3>
+        <h3 className="font-medium text-gray-700 mb-3">{year}년 계좌별 변화</h3>
         <table className="w-full text-sm"><thead><tr className="text-gray-400 text-xs border-b border-gray-200">
           <th className="py-2 text-left font-medium">계좌</th><th className="py-2 text-right font-medium">시작</th><th className="py-2 text-right font-medium">현재</th><th className="py-2 text-right font-medium">변화</th>
         </tr></thead><tbody>
