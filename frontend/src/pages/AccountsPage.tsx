@@ -75,7 +75,9 @@ function AccountDetail({ account, holdings, dcaRecords, onBack, onUpdated }: {
   onBack: () => void
   onUpdated: () => void
 }) {
-  const invested = dcaRecords.reduce((sum, r) => sum + r.amount, 0)
+  const thisYear = new Date().getFullYear()
+  const yearDca = dcaRecords.filter((r) => new Date(r.recordDate).getFullYear() === thisYear)
+  const invested = yearDca.reduce((sum, r) => sum + r.amount, 0)
   const limit = account.annualLimit
   const ratio = limit ? Math.min((invested / limit) * 100, 100) : 0
   const curr = holdings[0]?.currency === 'USD' ? '$' : '₩'
