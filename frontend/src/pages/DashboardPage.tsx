@@ -126,14 +126,18 @@ function TotalAssetTab({ accounts, holdings, allocations, totalInvested, totalHo
     <>
       {/* 스냅샷 기반 자산 요약 */}
       {latest ? (
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-5 gap-3">
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
             <p className="text-xs text-gray-400">자본 총액</p>
             <p className="text-xl font-bold text-gray-800">{fmtM(latest.totalCapital)}</p>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-            <p className="text-xs text-gray-400">투자 자산</p>
-            <p className="text-xl font-bold text-blue-600">{fmtM(latest.totalInvestment)}</p>
+            <p className="text-xs text-gray-400">순 투자자산</p>
+            <p className="text-xl font-bold text-blue-600">{fmtM(latest.totalInvestment - latest.acctCash)}</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+            <p className="text-xs text-gray-400">현금</p>
+            <p className="text-xl font-bold text-green-700">{fmtM(latest.acctCash)}</p>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
             <p className="text-xs text-gray-400">수익률</p>
