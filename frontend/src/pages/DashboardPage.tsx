@@ -144,17 +144,32 @@ export default function DashboardPage() {
                 {isExpanded && (
                   <div className="mt-2 ml-6 mb-2">
                     {accountHoldings.length > 0 ? (
-                      <div className="space-y-1">
-                        {accountHoldings.map((h) => (
-                          <div key={h.id} className="flex items-center justify-between text-xs text-gray-500 py-0.5">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-gray-600">{h.ticker}</span>
-                              <span>{h.name}</span>
-                            </div>
-                            <span className="text-gray-400">{h.currency}</span>
-                          </div>
-                        ))}
-                      </div>
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="text-gray-400 border-b border-gray-100">
+                            <th className="text-left py-1 font-medium">티커</th>
+                            <th className="text-left py-1 font-medium">종목명</th>
+                            <th className="text-right py-1 font-medium">수량</th>
+                            <th className="text-right py-1 font-medium">매수가</th>
+                            <th className="text-right py-1 font-medium">매수금액</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {accountHoldings.map((h) => (
+                            <tr key={h.id} className="border-b border-gray-50">
+                              <td className="py-1 font-mono text-gray-600">{h.ticker}</td>
+                              <td className="py-1 text-gray-500">{h.name}</td>
+                              <td className="py-1 text-right text-gray-600">{h.quantity > 0 ? h.quantity.toLocaleString() : '-'}</td>
+                              <td className="py-1 text-right text-gray-500">
+                                {h.avgPrice > 0 ? `${h.currency === 'USD' ? '$' : '₩'}${h.avgPrice.toLocaleString()}` : '-'}
+                              </td>
+                              <td className="py-1 text-right text-gray-700 font-medium">
+                                {h.totalAmount > 0 ? `${h.currency === 'USD' ? '$' : '₩'}${Math.round(h.totalAmount).toLocaleString()}` : '-'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     ) : (
                       <p className="text-xs text-gray-400">보유종목 없음</p>
                     )}

@@ -32,6 +32,9 @@ export interface Holding {
   ticker: string
   name: string
   currency: string
+  quantity: number
+  avgPrice: number
+  totalAmount: number
 }
 
 export type FlowType = 'INCOME' | 'EXPENSE'

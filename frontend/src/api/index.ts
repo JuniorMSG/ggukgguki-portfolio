@@ -62,6 +62,20 @@ export const holdingApi = {
 
   getByAccount: (accountId: number) =>
     fetchJson<Holding[]>(`${BASE}/holdings?accountId=${accountId}`),
+
+  create: (data: { accountId: number; assetClassId: number; ticker: string; name: string; currency?: string; quantity?: number; avgPrice?: number }) =>
+    fetchJson<Holding>(`${BASE}/holdings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: number, data: { quantity?: number; avgPrice?: number; name?: string }) =>
+    fetchJson<Holding>(`${BASE}/holdings/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }),
 }
 
 export const cashflowApi = {

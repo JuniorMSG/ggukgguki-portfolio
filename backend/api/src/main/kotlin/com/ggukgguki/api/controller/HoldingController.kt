@@ -1,6 +1,7 @@
 package com.ggukgguki.api.controller
 
 import com.ggukgguki.api.dto.HoldingCreateRequest
+import com.ggukgguki.api.dto.HoldingUpdateRequest
 import com.ggukgguki.api.dto.HoldingResult
 import com.ggukgguki.api.service.HoldingService
 import io.swagger.v3.oas.annotations.Operation
@@ -26,4 +27,8 @@ class HoldingController(
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody request: HoldingCreateRequest): HoldingResult = holdingService.create(request)
+
+    @Operation(summary = "보유 종목 수정", description = "수량, 매수가 등을 수정합니다")
+    @PutMapping("/{id}")
+    fun update(@PathVariable id: Long, @RequestBody request: HoldingUpdateRequest): HoldingResult = holdingService.update(id, request)
 }

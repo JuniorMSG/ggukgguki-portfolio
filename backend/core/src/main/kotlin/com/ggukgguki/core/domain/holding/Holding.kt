@@ -2,6 +2,7 @@ package com.ggukgguki.core.domain.holding
 
 import com.ggukgguki.core.domain.account.Account
 import jakarta.persistence.*
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Entity
@@ -27,6 +28,12 @@ class Holding(
 
     @Column(nullable = false, length = 3)
     var currency: String = "USD",
+
+    @Column(nullable = false, precision = 15, scale = 6)
+    var quantity: BigDecimal = BigDecimal.ZERO,
+
+    @Column(name = "avg_price", nullable = false, precision = 15, scale = 4)
+    var avgPrice: BigDecimal = BigDecimal.ZERO,
 
     @Column(name = "created_at", nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
