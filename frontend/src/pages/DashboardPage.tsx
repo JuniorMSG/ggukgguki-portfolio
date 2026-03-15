@@ -120,13 +120,18 @@ function TotalAssetTab({ accounts, holdings, allocations, totalInvested, totalHo
     return { year: y, change }
   })
 
-  const fmtM = (n: number) => { if (Math.abs(n) >= 1e8) return `${(n/1e8).toFixed(1)}억`; if (Math.abs(n) >= 1e4) return `${Math.round(n/1e4).toLocaleString()}만`; return n.toLocaleString() }
+  const fmtM = (n: number) => {
+    const abs = Math.abs(n); const sign = n < 0 ? '-' : ''
+    if (abs >= 1e8) return `${sign}${(abs/1e8).toFixed(2)}억`
+    if (abs >= 1e4) return `${sign}${Math.round(abs/1e4).toLocaleString()}만`
+    return n.toLocaleString()
+  }
 
   return (
     <>
       {/* 스냅샷 기반 자산 요약 */}
       {latest ? (
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-6 gap-3">
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
             <p className="text-xs text-gray-400">자본 총액</p>
             <p className="text-xl font-bold text-gray-800">{fmtM(latest.totalCapital)}</p>
@@ -139,6 +144,10 @@ function TotalAssetTab({ accounts, holdings, allocations, totalInvested, totalHo
             <p className="text-xs text-gray-400">현금 (유동)</p>
             <p className="text-xl font-bold text-green-700">{fmtM(latest.acctCash)}</p>
             <p className="text-xs text-gray-400 mt-1">비유동 {fmtM(latest.totalCapital - latest.totalInvestment)}</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+            <p className="text-xs text-gray-400">누적 투자금</p>
+            <p className="text-xl font-bold text-gray-700">{fmtM(totalInvested)}</p>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
             <p className="text-xs text-gray-400">수익률</p>
@@ -172,8 +181,7 @@ function TotalAssetTab({ accounts, holdings, allocations, totalInvested, totalHo
 
       {/* 매수/투자 요약 */}
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div><p className="text-xs text-gray-400">누적 투자금</p><p className="text-lg font-bold text-blue-600">{totalInvested.toLocaleString()}원</p></div>
+        <div className="grid grid-cols-2 gap-4 text-center">
           <div><p className="text-xs text-gray-400">매수총액 (KRW)</p><p className="text-lg font-bold text-gray-700">₩{Math.round(totalHoldingKRW).toLocaleString()}</p></div>
           <div><p className="text-xs text-gray-400">매수총액 (USD)</p><p className="text-lg font-bold text-gray-700">${Math.round(totalHoldingUSD).toLocaleString()}</p></div>
         </div>
@@ -578,7 +586,12 @@ function SnapshotTab({ snapshots, year }: { snapshots: WeeklySnapshot[]; year: n
   const filtered = snapshots.filter((s) => new Date(s.startDate).getFullYear() === year).sort((a, b) => a.startDate.localeCompare(b.startDate))
   const latest = filtered[filtered.length - 1]
   const first = filtered[0]
-  const fmtM = (n: number) => { if (Math.abs(n) >= 1e8) return `${(n/1e8).toFixed(1)}억`; if (Math.abs(n) >= 1e4) return `${Math.round(n/1e4).toLocaleString()}만`; return n.toLocaleString() }
+  const fmtM = (n: number) => {
+    const abs = Math.abs(n); const sign = n < 0 ? '-' : ''
+    if (abs >= 1e8) return `${sign}${(abs/1e8).toFixed(2)}억`
+    if (abs >= 1e4) return `${sign}${Math.round(abs/1e4).toLocaleString()}만`
+    return n.toLocaleString()
+  }
 
   return (
     <>
