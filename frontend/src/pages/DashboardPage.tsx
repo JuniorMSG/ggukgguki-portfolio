@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { accountApi, assetClassApi, dcaApi, holdingApi, cashflowApi } from '../api'
-import type { Account, Allocation, DcaRecord, Holding, CashflowRecord } from '../types'
+import { accountApi, assetClassApi, dcaApi, holdingApi, cashflowApi, snapshotApi } from '../api'
+import type { Account, Allocation, DcaRecord, Holding, CashflowRecord, WeeklySnapshot } from '../types'
 
 const USER_ID = 1
 
@@ -13,7 +13,7 @@ const ACCOUNT_TYPE_LABEL: Record<string, string> = {
 }
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#6b7280', '#ef4444', '#8b5cf6']
-const TABS = ['총자산', '투자현황', '수입/지출'] as const
+const TABS = ['총자산', '투자현황', '주간추이', '수입/지출'] as const
 type Tab = typeof TABS[number]
 
 export default function DashboardPage() {
@@ -24,6 +24,7 @@ export default function DashboardPage() {
   const [allDca, setAllDca] = useState<DcaRecord[]>([])
   const [cashRecords, setCashRecords] = useState<CashflowRecord[]>([])
   const [yearCashRecords, setYearCashRecords] = useState<CashflowRecord[]>([])
+  const [snapshots, setSnapshots] = useState<WeeklySnapshot[]>([])
 
   const now = new Date()
   const year = now.getFullYear()
@@ -37,6 +38,7 @@ export default function DashboardPage() {
     holdingApi.getAll().then(setHoldings).catch(() => {})
     cashflowApi.getRecords(USER_ID, monthStart, monthEnd).then(setCashRecords).catch(() => {})
     cashflowApi.getRecords(USER_ID, `${year}-01-01`, `${year}-12-31`).then(setYearCashRecords).catch(() => {})
+    snapshotApi.getAll(USER_ID).then(setSnapshots).catch(() => {})
     // 전체 DCA
     const promises = Array.from({ length: year - 2018 }, (_, i) => 2019 + i).map((y) => dcaApi.getByYear(y))
     Promise.all(promises).then((r) => setAllDca(r.flat()))
@@ -75,6 +77,9 @@ export default function DashboardPage() {
           accounts={accounts} allDca={allDca} yearDca={yearDca}
           yearInvested={yearInvested} year={year}
         />
+      )}
+      {tab === '주간추이' && (
+        <SnapshotTab snapshots={snapshots} />
       )}
       {tab === '수입/지출' && (
         <CashflowTab
@@ -497,6 +502,66 @@ function CashflowTab({ cashRecords, yearCashRecords, year, month }: {
           </tbody>
         </table>
       </div>
+    </>
+  )
+}
+
+// ─── 주간추이 탭 ───
+function SnapshotTab({ snapshots }: { snapshots: WeeklySnapshot[] }) {
+  const currentYear = new Date().getFullYear()
+  const [selectedYear, setSelectedYear] = useState(currentYear)
+  const years = [...new Set(snapshots.map((s) => new Date(s.startDate).getFullYear()))].sort()
+  const filtered = snapshots.filter((s) => new Date(s.startDate).getFullYear() === selectedYear).sort((a, b) => a.startDate.localeCompare(b.startDate))
+  const latest = filtered[filtered.length - 1]
+  const first = filtered[0]
+  const fmtM = (n: number) => { if (Math.abs(n) >= 1e8) return `${(n/1e8).toFixed(1)}억`; if (Math.abs(n) >= 1e4) return `${Math.round(n/1e4).toLocaleString()}만`; return n.toLocaleString() }
+
+  return (
+    <>
+      <div className="flex gap-2">{years.map((y) => (<button key={y} onClick={() => setSelectedYear(y)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${selectedYear === y ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>{y}년</button>))}</div>
+      {latest && (<div className="grid grid-cols-4 gap-3">
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center"><p className="text-xs text-gray-400">자본 총액</p><p className="text-lg font-bold text-gray-800">{fmtM(latest.totalCapital)}</p></div>
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center"><p className="text-xs text-gray-400">투자 자산</p><p className="text-lg font-bold text-blue-600">{fmtM(latest.totalInvestment)}</p></div>
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center"><p className="text-xs text-gray-400">수익률</p><p className="text-lg font-bold text-green-600">{latest.returnRate}%</p></div>
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center"><p className="text-xs text-gray-400">배당 (누적)</p><p className="text-lg font-bold text-gray-800">{fmtM(latest.totalDividend)}</p></div>
+      </div>)}
+      {filtered.length > 0 && (<div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        <h3 className="font-medium text-gray-700 mb-3">{selectedYear}년 주간 추이 <span className="text-gray-400 text-sm font-normal">({filtered.length}주)</span></h3>
+        <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+          <table className="w-full text-xs"><thead className="sticky top-0 bg-white"><tr className="text-gray-400 border-b border-gray-200">
+            <th className="py-2 text-left font-medium">주차</th><th className="py-2 text-right font-medium">자본총액</th><th className="py-2 text-right font-medium">투자자산</th>
+            <th className="py-2 text-right font-medium">성장률</th><th className="py-2 text-right font-medium">수익률</th><th className="py-2 text-right font-medium">순증가</th>
+            <th className="py-2 text-right font-medium">배당</th><th className="py-2 text-right font-medium">환율</th>
+          </tr></thead><tbody>
+            {filtered.map((s) => (<tr key={s.id} className="border-b border-gray-50 hover:bg-gray-50">
+              <td className="py-1.5 text-gray-600 whitespace-nowrap">{s.weekLabel}</td>
+              <td className="py-1.5 text-right text-gray-700">{fmtM(s.totalCapital)}</td>
+              <td className="py-1.5 text-right text-blue-600">{fmtM(s.totalInvestment)}</td>
+              <td className={`py-1.5 text-right ${s.capitalGrowthRate >= 100 ? 'text-green-600' : 'text-red-500'}`}>{s.capitalGrowthRate}%</td>
+              <td className="py-1.5 text-right text-gray-700">{s.returnRate}%</td>
+              <td className={`py-1.5 text-right font-medium ${s.weeklyChange >= 0 ? 'text-green-600' : 'text-red-500'}`}>{s.weeklyChange !== 0 ? fmtM(s.weeklyChange) : '-'}</td>
+              <td className="py-1.5 text-right text-gray-500">{s.weeklyDividend > 0 ? fmtM(s.weeklyDividend) : '-'}</td>
+              <td className="py-1.5 text-right text-gray-400">{s.exchangeRate > 0 ? s.exchangeRate.toFixed(0) : '-'}</td>
+            </tr>))}
+          </tbody></table>
+        </div>
+      </div>)}
+      {latest && first && (<div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        <h3 className="font-medium text-gray-700 mb-3">{selectedYear}년 계좌별 변화</h3>
+        <table className="w-full text-sm"><thead><tr className="text-gray-400 text-xs border-b border-gray-200">
+          <th className="py-2 text-left font-medium">계좌</th><th className="py-2 text-right font-medium">시작</th><th className="py-2 text-right font-medium">현재</th><th className="py-2 text-right font-medium">변화</th>
+        </tr></thead><tbody>
+          {([['해외계좌',first.acctOverseas,latest.acctOverseas],['국내',first.acctDomestic,latest.acctDomestic],['IRP',first.acctIrp,latest.acctIrp],['연금저축1',first.acctPension1,latest.acctPension1],['연금저축2',first.acctPension2,latest.acctPension2],['ISA',first.acctIsa,latest.acctIsa],['현금',first.acctCash,latest.acctCash]] as [string,number,number][]).map(([name,start,end]) => {
+            const diff = end - start
+            return (<tr key={name} className="border-b border-gray-50">
+              <td className="py-1.5 text-gray-600">{name}</td>
+              <td className="py-1.5 text-right text-gray-500">{fmtM(start)}</td>
+              <td className="py-1.5 text-right text-gray-700 font-medium">{fmtM(end)}</td>
+              <td className={`py-1.5 text-right font-medium ${diff >= 0 ? 'text-green-600' : 'text-red-500'}`}>{diff >= 0 ? '+' : ''}{fmtM(diff)}</td>
+            </tr>)
+          })}
+        </tbody></table>
+      </div>)}
     </>
   )
 }

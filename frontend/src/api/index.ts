@@ -1,4 +1,4 @@
-import type { Account, Allocation, AnnualLimit, AssetClass, CashflowCategory, CashflowRecord, DcaRecord, Holding } from '../types'
+import type { Account, Allocation, AnnualLimit, AssetClass, CashflowCategory, CashflowRecord, DcaRecord, Holding, WeeklySnapshot } from '../types'
 
 const BASE = '/api'
 
@@ -104,4 +104,12 @@ export const cashflowApi = {
 
   delete: (id: number) =>
     fetch(`${BASE}/cashflow/records/${id}`, { method: 'DELETE' }),
+}
+
+export const snapshotApi = {
+  getAll: (userId: number) =>
+    fetchJson<WeeklySnapshot[]>(`${BASE}/snapshots?userId=${userId}`),
+
+  getByYear: (userId: number, year: number) =>
+    fetchJson<WeeklySnapshot[]>(`${BASE}/snapshots?userId=${userId}&year=${year}`),
 }

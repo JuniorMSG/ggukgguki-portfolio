@@ -37,6 +37,36 @@ export interface Holding {
   totalAmount: number
 }
 
+export interface WeeklySnapshot {
+  id: number
+  weekLabel: string
+  startDate: string
+  endDate: string
+  totalCapital: number
+  totalInvestment: number
+  capitalGrowthRate: number
+  investmentGrowthRate: number
+  investedPlusCash: number
+  totalDividend: number
+  returnRate: number
+  returnRateTr: number
+  acctOverseas: number
+  acctDomestic: number
+  acctIrp: number
+  acctPension1: number
+  acctPension2: number
+  acctIsa: number
+  acctCash: number
+  weeklyChange: number
+  weeklyDividend: number
+  assetGrowth: number
+  assetDividend: number
+  assetBond: number
+  assetCash: number
+  assetDomestic: number
+  exchangeRate: number
+}
+
 export interface AnnualLimit {
   id: number
   accountId: number
