@@ -26,7 +26,6 @@ data class AssetClassResult(
 
 @Schema(description = "유저 자산 비중 설정 요청")
 data class AllocationSetRequest(
-    val userId: Long,
     val allocations: List<AllocationItem>
 )
 

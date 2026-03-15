@@ -3,11 +3,10 @@ import { accountApi, dcaApi } from '../api'
 import type { Account } from '../types'
 
 interface Props {
-  userId: number
   onCreated: () => void
 }
 
-export default function DcaForm({ userId, onCreated }: Props) {
+export default function DcaForm({ onCreated }: Props) {
   const [accounts, setAccounts] = useState<Account[]>([])
   const [accountId, setAccountId] = useState<number>(0)
   const [amount, setAmount] = useState<string>('1000000')
@@ -18,11 +17,11 @@ export default function DcaForm({ userId, onCreated }: Props) {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    accountApi.getByUserId(userId).then((list) => {
+    accountApi.getMyAccounts().then((list) => {
       setAccounts(list)
       if (list.length > 0 && accountId === 0) setAccountId(list[0].id)
     })
-  }, [userId])
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

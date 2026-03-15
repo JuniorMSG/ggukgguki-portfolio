@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react'
 import { accountApi, assetClassApi, dcaApi, holdingApi, cashflowApi, snapshotApi } from '../api'
 import type { Account, Allocation, DcaRecord, Holding, CashflowRecord, WeeklySnapshot } from '../types'
 
-const USER_ID = 1
-
 const ACCOUNT_TYPE_LABEL: Record<string, string> = {
   PENSION_SAVINGS: '연금저축',
   IRP: 'IRP',
@@ -36,12 +34,17 @@ export default function DashboardPage() {
   const yearOptions = Array.from({ length: currentYear - 2018 }, (_, i) => currentYear - i)
 
   useEffect(() => {
-    accountApi.getByUserId(USER_ID).then(setAccounts)
-    assetClassApi.getAllocations(USER_ID).then(setAllocations).catch(() => {})
-    holdingApi.getAll().then(setHoldings).catch(() => {})
-    cashflowApi.getRecords(USER_ID, monthStart, monthEnd).then(setCashRecords).catch(() => {})
-    cashflowApi.getRecords(USER_ID, `${year}-01-01`, `${year}-12-31`).then(setYearCashRecords).catch(() => {})
-    snapshotApi.getAll(USER_ID).then(setSnapshots).catch(() => {})
+    accountApi.getMyAccounts().then((accts) => {
+      setAccounts(accts)
+      // 계좌별 holding 조회
+      Promise.all(accts.map((a) => holdingApi.getByAccount(a.id)))
+        .then((results) => setHoldings(results.flat()))
+        .catch(() => {})
+    })
+    assetClassApi.getAllocations().then(setAllocations).catch(() => {})
+    cashflowApi.getRecords(monthStart, monthEnd).then(setCashRecords).catch(() => {})
+    cashflowApi.getRecords(`${year}-01-01`, `${year}-12-31`).then(setYearCashRecords).catch(() => {})
+    snapshotApi.getAll().then(setSnapshots).catch(() => {})
     // 전체 DCA
     const promises = Array.from({ length: year - 2018 }, (_, i) => 2019 + i).map((y) => dcaApi.getByYear(y))
     Promise.all(promises).then((r) => setAllDca(r.flat()))

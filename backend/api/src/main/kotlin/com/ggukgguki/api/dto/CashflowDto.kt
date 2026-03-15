@@ -30,7 +30,6 @@ data class CashflowCategoryResult(
 
 @Schema(description = "수입/지출 기록 생성 요청")
 data class CashflowCreateRequest(
-    val userId: Long,
     @Schema(description = "소분류 카테고리 ID")
     val categoryId: Long,
     @Schema(description = "금액 (원)", example = "50000")

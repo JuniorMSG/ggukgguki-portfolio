@@ -3,8 +3,6 @@ import { accountApi, dcaApi } from '../api'
 import type { Account, DcaRecord } from '../types'
 import DcaForm from '../components/DcaForm'
 
-const USER_ID = 1
-
 const ACCOUNT_ORDER = ['연금저축1', '연금저축2', 'IRP', 'ISA', '해외계좌', '일반-국내']
 
 export default function DcaPage() {
@@ -17,7 +15,7 @@ export default function DcaPage() {
   const currentYear = now.getFullYear()
 
   useEffect(() => {
-    accountApi.getByUserId(USER_ID).then(setAccounts)
+    accountApi.getMyAccounts().then(setAccounts)
   }, [])
 
   useEffect(() => {
@@ -123,7 +121,7 @@ export default function DcaPage() {
       )}
 
       {/* 입금 폼 */}
-      <DcaForm userId={USER_ID} onCreated={() => setRefreshKey((k) => k + 1)} />
+      <DcaForm onCreated={() => setRefreshKey((k) => k + 1)} />
 
       {/* 상세 기록 */}
       {sortedRecords.length > 0 && (

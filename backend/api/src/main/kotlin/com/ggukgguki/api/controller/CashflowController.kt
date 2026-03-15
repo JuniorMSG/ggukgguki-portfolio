@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 
@@ -21,10 +22,10 @@ class CashflowController(
     @GetMapping("/categories")
     fun getCategories(): List<CashflowCategoryResult> = cashflowService.getCategories()
 
-    @Operation(summary = "기간별 기록 조회", description = "특정 유저의 수입/지출 기록을 기간으로 조회합니다")
+    @Operation(summary = "기간별 기록 조회", description = "내 수입/지출 기록을 기간으로 조회합니다")
     @GetMapping("/records")
     fun getRecords(
-        @RequestParam userId: Long,
+        @AuthenticationPrincipal userId: Long,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate
     ): List<CashflowRecordResult> = cashflowService.getRecords(userId, startDate, endDate)
@@ -32,8 +33,10 @@ class CashflowController(
     @Operation(summary = "수입/지출 기록 생성", description = "수입 또는 지출 기록을 추가합니다 (카테고리에 따라 자동 구분)")
     @PostMapping("/records")
     @ResponseStatus(HttpStatus.CREATED)
-    fun create(@RequestBody request: CashflowCreateRequest): CashflowRecordResult =
-        cashflowService.create(request)
+    fun create(
+        @RequestBody request: CashflowCreateRequest,
+        @AuthenticationPrincipal userId: Long
+    ): CashflowRecordResult = cashflowService.create(request, userId)
 
     @Operation(summary = "수입/지출 기록 삭제", description = "수입/지출 기록을 삭제합니다")
     @DeleteMapping("/records/{id}")

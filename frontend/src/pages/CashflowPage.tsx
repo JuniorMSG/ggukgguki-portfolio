@@ -3,8 +3,6 @@ import { cashflowApi } from '../api'
 import type { CashflowCategory, CashflowRecord } from '../types'
 import CashflowForm from '../components/CashflowForm'
 
-const USER_ID = 1
-
 export default function CashflowPage() {
   const [records, setRecords] = useState<CashflowRecord[]>([])
   const [categories, setCategories] = useState<CashflowCategory[]>([])
@@ -33,13 +31,13 @@ export default function CashflowPage() {
 
   useEffect(() => {
     if (isYearView) {
-      cashflowApi.getRecords(USER_ID, yearStart, yearEnd).then((data) => {
+      cashflowApi.getRecords(yearStart, yearEnd).then((data) => {
         setRecords(data)
         setYearRecords(data)
       }).catch(() => {})
     } else {
-      cashflowApi.getRecords(USER_ID, startDate, endDate).then(setRecords).catch(() => {})
-      cashflowApi.getRecords(USER_ID, yearStart, yearEnd).then(setYearRecords).catch(() => {})
+      cashflowApi.getRecords(startDate, endDate).then(setRecords).catch(() => {})
+      cashflowApi.getRecords(yearStart, yearEnd).then(setYearRecords).catch(() => {})
     }
   }, [refreshKey, startDate, endDate, yearStart, yearEnd, isYearView])
 
@@ -222,7 +220,6 @@ export default function CashflowPage() {
 
       {/* 다건 입력 폼 */}
       <CashflowForm
-        userId={USER_ID}
         categories={categories}
         onCreated={() => setRefreshKey((k) => k + 1)}
       />

@@ -30,12 +30,11 @@ class AssetClassService(
         allocationRepository.findByUserIdOrderByAssetClassDisplayOrderAsc(userId).map { AllocationResult.from(it) }
 
     @Transactional
-    fun setAllocations(request: AllocationSetRequest): List<AllocationResult> {
-        val user = userRepository.findById(request.userId)
-            .orElseThrow { IllegalArgumentException("유저를 찾을 수 없어요: ${request.userId}") }
+    fun setAllocations(request: AllocationSetRequest, userId: Long): List<AllocationResult> {
+        val user = userRepository.findById(userId)
+            .orElseThrow { IllegalArgumentException("유저를 찾을 수 없어요: $userId") }
 
-        // 기존 allocation 삭제 후 재생성
-        val existing = allocationRepository.findByUserIdOrderByAssetClassDisplayOrderAsc(request.userId)
+        val existing = allocationRepository.findByUserIdOrderByAssetClassDisplayOrderAsc(userId)
         allocationRepository.deleteAll(existing)
 
         val newAllocations = request.allocations.map { item ->

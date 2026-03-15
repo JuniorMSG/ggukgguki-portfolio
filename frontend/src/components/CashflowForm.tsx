@@ -3,7 +3,6 @@ import { cashflowApi } from '../api'
 import type { CashflowCategory, FlowType } from '../types'
 
 interface Props {
-  userId: number
   categories: CashflowCategory[]
   onCreated: () => void
 }
@@ -29,7 +28,7 @@ const makeRow = (defaults?: Partial<Row>): Row => ({
   memo: '',
 })
 
-export default function CashflowForm({ userId, categories, onCreated }: Props) {
+export default function CashflowForm({ categories, onCreated }: Props) {
   const [rows, setRows] = useState<Row[]>([makeRow()])
   const [loading, setLoading] = useState(false)
 
@@ -67,7 +66,6 @@ export default function CashflowForm({ userId, categories, onCreated }: Props) {
       await Promise.all(
         validRows.map((r) =>
           cashflowApi.create({
-            userId,
             categoryId: r.categoryId,
             amount: Number(r.amount),
             recordDate: r.recordDate,

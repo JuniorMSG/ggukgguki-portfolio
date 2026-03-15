@@ -60,10 +60,15 @@ cd frontend && npm run dev
 - **YAGNI**: 지금 필요하지 않은 기능은 미리 만들지 않는다
 - 파일 하나가 150줄 넘어가면 분리 검토
 
-### 작업 흐름
-- 작업 시작 전 → 기획서 로드맵(`../msg-ai-context/plans/side-project-asset-saas.md`)에 할 일 추가
-- 작업 완료 후 → 로드맵 체크리스트 업데이트 (`[ ]` → `[x]`)
-- 빠뜨리지 않는다
+### 작업 흐름 (반드시 이 순서를 지킨다)
+1. **계획 (MSG와 논의)**: 어떤 작업을 어떻게 할지 MSG와 함께 논의 → 합의된 내용을 도메인 문서로 정리
+   - `docs/feature/{도메인}/context.md` — 배경, 요구사항, 설계 결정
+   - `docs/feature/{도메인}/plan.md` — 구현 계획, 기술 스펙
+   - `docs/feature/{도메인}/checklist.md` — 작업 체크리스트 (`[ ]` / `[x]`)
+   - 로드맵(`../msg-ai-context/plans/side-project-asset-saas.md`)에도 할 일 추가
+2. **작업**: 코드 구현
+3. **완료 처리**: checklist.md 체크 (`[ ]` → `[x]`) + 로드맵 업데이트
+- 이 사이클을 빠짐없이 반복한다. MSG와 논의 없이 임의로 계획 세우지 않고, 작업 후 완료 처리를 빠뜨리지 않는다
 
 ### API 문서화
 - API 작업 시 Swagger 문서도 함께 작성한다 (빠뜨리지 않는다)
@@ -78,7 +83,42 @@ cd frontend && npm run dev
 - Application Service(api 모듈)는 흐름 제어만, 비즈니스 판단은 도메인에 위임
 
 ### 프론트엔드
+
+#### 페이지 설계 (백엔드 Controller처럼 분리)
+- **1페이지 = 1파일 = 1라우트**: 한 파일에 여러 화면을 state로 토글하지 않는다
+  - 메인 목록 → `/assets` (AssetsPage)
+  - 상세 화면 → `/assets/:id` (AssetDetailPage)
+  - 이렇게 URL 라우팅으로 분리해야 각 페이지가 독립적으로 데이터를 로드할 수 있다
+- **각 페이지는 자기가 필요한 데이터만 로드**: 메인 목록에서 상세 데이터까지 한꺼번에 불러오지 않는다
+  - 나쁜 예: 목록 페이지에서 전체 DCA + 전체 Holdings + CashAssets 한번에 로드
+  - 좋은 예: 목록은 계좌 summary만, 상세 진입 시 해당 계좌 데이터만 로드
+- **파일 하나에 컴포넌트 하나**: export default 하나만. 내부 보조 컴포넌트가 커지면 별도 파일로 분리
+
+#### 컴포넌트 구조
 - 컴포넌트는 UI 렌더링에 집중, 비즈니스 로직은 hooks로 분리
 - API 호출은 api/ 모듈에 집중 (컴포넌트에서 직접 fetch 금지)
 - 타입 정의는 types/에 모아두기
 - 페이지 컴포넌트와 재사용 컴포넌트 분리 (pages/ vs components/)
+
+#### 인증/인가 (구현 완료)
+- Spring Security + JWT + 구글 OAuth2 로그인
+- 소유권 검증: OwnershipChecker가 모든 리소스 접근 시 userId 확인
+- ADMIN 역할: 소유권 검증 우회 (모든 데이터 접근 가능)
+- 공개 페이지: 랜딩(`/`), 계산기(`/tax`, `/salary`, `/freelancer`)
+- 인증 필수: 대시보드(`/dashboard`), 자산, DCA, 수입/지출 등
+
+#### 랜딩 페이지 관리
+- **새 기능 추가 시 `LandingPage.tsx`의 `features` 배열에도 반영할 것**
+- 주요 기능 카드 + 무료 계산기 카드로 구성
+- 로그인 유저는 "대시보드로 이동", 비로그인은 "시작하기" 버튼
+
+#### 디렉토리 구조
+```
+frontend/src/
+├── api/          → API 호출 (백엔드 Client 역할)
+├── types/        → 타입 정의 (백엔드 DTO 역할)
+├── pages/        → 페이지 컴포넌트 (백엔드 Controller 역할, 1파일 = 1라우트)
+├── components/   → 재사용 컴포넌트 (백엔드 공통 모듈 역할)
+│   └── layout/   → 레이아웃 (Nav 등)
+└── hooks/        → 커스텀 훅 (백엔드 Service 역할)
+```

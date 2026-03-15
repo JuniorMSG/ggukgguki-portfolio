@@ -16,6 +16,12 @@ class User(
     @Column(nullable = false, length = 50)
     var nickname: String,
 
+    @Column(nullable = false, length = 200)
+    var password: String = "",
+
+    @Column(nullable = false, length = 20)
+    var role: String = "USER",
+
     @Column(name = "is_active", nullable = false)
     var isActive: Boolean = true,
 

@@ -2,6 +2,7 @@ package com.ggukgguki.api.service
 
 import com.ggukgguki.api.dto.DcaCreateRequest
 import com.ggukgguki.api.dto.DcaResult
+import com.ggukgguki.api.security.OwnershipChecker
 import com.ggukgguki.core.domain.account.AccountRepository
 import com.ggukgguki.core.domain.dca.DcaRecord
 import com.ggukgguki.core.domain.dca.DcaRecordRepository
@@ -13,21 +14,25 @@ import java.time.LocalDate
 @Transactional(readOnly = true)
 class DcaService(
     private val dcaRecordRepository: DcaRecordRepository,
-    private val accountRepository: AccountRepository
+    private val accountRepository: AccountRepository,
+    private val ownershipChecker: OwnershipChecker
 ) {
-    fun getByYear(year: Int): List<DcaResult> {
+    fun getByYear(year: Int, userId: Long): List<DcaResult> {
         val from = LocalDate.of(year, 1, 1)
         val to = LocalDate.of(year, 12, 31)
-        return dcaRecordRepository.findByRecordDateBetweenOrderByRecordDateDesc(from, to)
+        return dcaRecordRepository.findByAccountUserIdAndRecordDateBetweenOrderByRecordDateDesc(userId, from, to)
             .map { DcaResult.from(it) }
     }
 
-    fun getByAccount(accountId: Long): List<DcaResult> =
-        dcaRecordRepository.findByAccountIdOrderByRecordDateDesc(accountId)
+    fun getByAccount(accountId: Long, userId: Long): List<DcaResult> {
+        ownershipChecker.checkAccountOwner(accountId, userId)
+        return dcaRecordRepository.findByAccountIdOrderByRecordDateDesc(accountId)
             .map { DcaResult.from(it) }
+    }
 
     @Transactional
-    fun create(request: DcaCreateRequest): DcaResult {
+    fun create(request: DcaCreateRequest, userId: Long): DcaResult {
+        ownershipChecker.checkAccountOwner(request.accountId, userId)
         val account = accountRepository.findById(request.accountId)
             .orElseThrow { IllegalArgumentException("계좌를 찾을 수 없어요: ${request.accountId}") }
 
@@ -41,10 +46,8 @@ class DcaService(
     }
 
     @Transactional
-    fun delete(id: Long) {
-        if (!dcaRecordRepository.existsById(id)) {
-            throw IllegalArgumentException("DCA 기록을 찾을 수 없어요: $id")
-        }
+    fun delete(id: Long, userId: Long) {
+        ownershipChecker.checkDcaOwner(id, userId)
         dcaRecordRepository.deleteById(id)
     }
 }

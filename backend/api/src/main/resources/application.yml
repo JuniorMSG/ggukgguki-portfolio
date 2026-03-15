@@ -18,6 +18,14 @@ spring:
 server:
   port: 8080
 
+jwt:
+  secret: ${JWT_SECRET:dGhpcyBpcyBhIGRldmVsb3BtZW50LW9ubHkgc2VjcmV0IGtleQ==}
+  access-expiration: 1800000
+  refresh-expiration: 604800000
+
+google:
+  client-id: ${GOOGLE_CLIENT_ID:356220366807-71q5so2s2d9a1pmf1j2vs0h82tvsf7in.apps.googleusercontent.com}
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

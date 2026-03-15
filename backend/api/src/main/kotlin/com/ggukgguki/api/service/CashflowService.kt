@@ -27,9 +27,9 @@ class CashflowService(
             .map { CashflowRecordResult.from(it) }
 
     @Transactional
-    fun create(request: CashflowCreateRequest): CashflowRecordResult {
-        val user = userRepository.findById(request.userId)
-            .orElseThrow { IllegalArgumentException("유저를 찾을 수 없어요: ${request.userId}") }
+    fun create(request: CashflowCreateRequest, userId: Long): CashflowRecordResult {
+        val user = userRepository.findById(userId)
+            .orElseThrow { IllegalArgumentException("유저를 찾을 수 없어요: $userId") }
         val category = categoryRepository.findById(request.categoryId)
             .orElseThrow { IllegalArgumentException("카테고리를 찾을 수 없어요: ${request.categoryId}") }
 

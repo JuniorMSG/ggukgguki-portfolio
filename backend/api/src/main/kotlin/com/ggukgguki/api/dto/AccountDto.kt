@@ -6,8 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "계좌 생성 요청")
 data class AccountCreateRequest(
-    @Schema(description = "유저 ID")
-    val userId: Long,
     @Schema(description = "계좌명", example = "연금저축1")
     val name: String,
     @Schema(description = "계좌 유형", example = "PENSION_SAVINGS")

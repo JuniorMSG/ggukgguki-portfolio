@@ -1,25 +1,31 @@
 package com.ggukgguki.api.controller
 
-import com.ggukgguki.api.dto.UserCreateRequest
+import com.ggukgguki.api.dto.NicknameRequest
+import com.ggukgguki.api.dto.TokenResponse
 import com.ggukgguki.api.dto.UserResult
+import com.ggukgguki.api.service.AuthService
 import com.ggukgguki.api.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.http.HttpStatus
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
 @Tag(name = "User", description = "유저 관리")
 @RestController
 @RequestMapping("/api/users")
 class UserController(
-    private val userService: UserService
+    private val userService: UserService,
+    private val authService: AuthService
 ) {
-    @Operation(summary = "유저 단건 조회", description = "ID로 유저 정보를 조회합니다")
-    @GetMapping("/{id}")
-    fun getById(@PathVariable id: Long): UserResult = userService.getById(id)
+    @Operation(summary = "내 정보 조회")
+    @GetMapping("/me")
+    fun getMe(@AuthenticationPrincipal userId: Long): UserResult =
+        userService.getById(userId)
 
-    @Operation(summary = "유저 생성", description = "이메일과 닉네임으로 새 유저를 생성합니다")
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    fun create(@RequestBody request: UserCreateRequest): UserResult = userService.create(request)
+    @Operation(summary = "닉네임 설정", description = "내 닉네임을 변경합니다")
+    @PutMapping("/me/nickname")
+    fun setNickname(
+        @RequestBody request: NicknameRequest,
+        @AuthenticationPrincipal userId: Long
+    ): TokenResponse = authService.setNickname(userId, request.nickname)
 }

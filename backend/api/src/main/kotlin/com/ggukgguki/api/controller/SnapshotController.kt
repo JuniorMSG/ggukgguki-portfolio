@@ -4,6 +4,7 @@ import com.ggukgguki.api.dto.SnapshotResult
 import com.ggukgguki.core.domain.snapshot.WeeklySnapshotRepository
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 
@@ -15,12 +16,15 @@ class SnapshotController(
 ) {
     @Operation(summary = "전체 주간 스냅샷 조회")
     @GetMapping
-    fun getAll(@RequestParam userId: Long): List<SnapshotResult> =
+    fun getAll(@AuthenticationPrincipal userId: Long): List<SnapshotResult> =
         snapshotRepository.findByUserIdOrderByStartDateDesc(userId).map { SnapshotResult.from(it) }
 
     @Operation(summary = "연도별 주간 스냅샷 조회")
-    @GetMapping(params = ["userId", "year"])
-    fun getByYear(@RequestParam userId: Long, @RequestParam year: Int): List<SnapshotResult> =
+    @GetMapping(params = ["year"])
+    fun getByYear(
+        @AuthenticationPrincipal userId: Long,
+        @RequestParam year: Int
+    ): List<SnapshotResult> =
         snapshotRepository.findByUserIdAndStartDateBetweenOrderByStartDate(
             userId, LocalDate.of(year, 1, 1), LocalDate.of(year, 12, 31)
         ).map { SnapshotResult.from(it) }

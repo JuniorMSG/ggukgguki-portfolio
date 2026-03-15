@@ -6,4 +6,5 @@ import java.time.LocalDate
 interface DcaRecordRepository : JpaRepository<DcaRecord, Long> {
     fun findByRecordDateBetweenOrderByRecordDateDesc(from: LocalDate, to: LocalDate): List<DcaRecord>
     fun findByAccountIdOrderByRecordDateDesc(accountId: Long): List<DcaRecord>
+    fun findByAccountUserIdAndRecordDateBetweenOrderByRecordDateDesc(userId: Long, from: LocalDate, to: LocalDate): List<DcaRecord>
 }

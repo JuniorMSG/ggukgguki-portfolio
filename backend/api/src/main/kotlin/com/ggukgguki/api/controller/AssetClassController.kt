@@ -6,6 +6,7 @@ import com.ggukgguki.api.dto.AssetClassResult
 import com.ggukgguki.api.service.AssetClassService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
 @Tag(name = "AssetClass", description = "자산군 마스터 + 유저별 비중")
@@ -27,13 +28,15 @@ class AssetClassController(
     fun getSubCategories(@PathVariable parentId: Long): List<AssetClassResult> =
         assetClassService.getSubCategories(parentId)
 
-    @Operation(summary = "유저별 자산 비중 조회", description = "유저가 설정한 목표 자산 배분 비중을 조회합니다")
+    @Operation(summary = "내 자산 비중 조회", description = "목표 자산 배분 비중을 조회합니다")
     @GetMapping("/allocations")
-    fun getAllocations(@RequestParam userId: Long): List<AllocationResult> =
+    fun getAllocations(@AuthenticationPrincipal userId: Long): List<AllocationResult> =
         assetClassService.getAllocationsByUser(userId)
 
-    @Operation(summary = "유저별 자산 비중 설정", description = "기존 비중을 전체 교체합니다 (PUT)")
+    @Operation(summary = "내 자산 비중 설정", description = "기존 비중을 전체 교체합니다 (PUT)")
     @PutMapping("/allocations")
-    fun setAllocations(@RequestBody request: AllocationSetRequest): List<AllocationResult> =
-        assetClassService.setAllocations(request)
+    fun setAllocations(
+        @RequestBody request: AllocationSetRequest,
+        @AuthenticationPrincipal userId: Long
+    ): List<AllocationResult> = assetClassService.setAllocations(request, userId)
 }
