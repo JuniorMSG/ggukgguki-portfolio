@@ -136,8 +136,9 @@ function TotalAssetTab({ accounts, holdings, allocations, totalInvested, totalHo
             <p className="text-xl font-bold text-blue-600">{fmtM(latest.totalInvestment - latest.acctCash)}</p>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-            <p className="text-xs text-gray-400">현금</p>
+            <p className="text-xs text-gray-400">현금 (유동)</p>
             <p className="text-xl font-bold text-green-700">{fmtM(latest.acctCash)}</p>
+            <p className="text-xs text-gray-400 mt-1">비유동 {fmtM(latest.totalCapital - latest.totalInvestment)}</p>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
             <p className="text-xs text-gray-400">수익률</p>
