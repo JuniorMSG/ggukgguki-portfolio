@@ -37,6 +37,13 @@ export interface Holding {
   totalAmount: number
 }
 
+export interface AnnualLimit {
+  id: number
+  accountId: number
+  year: number
+  annualLimit: number
+}
+
 export type FlowType = 'INCOME' | 'EXPENSE'
 
 export interface CashflowCategory {

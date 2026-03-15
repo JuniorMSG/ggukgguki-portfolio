@@ -1,4 +1,4 @@
-import type { Account, Allocation, AssetClass, CashflowCategory, CashflowRecord, DcaRecord, Holding } from '../types'
+import type { Account, Allocation, AnnualLimit, AssetClass, CashflowCategory, CashflowRecord, DcaRecord, Holding } from '../types'
 
 const BASE = '/api'
 
@@ -17,6 +17,16 @@ export const accountApi = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
+    }),
+
+  getLimits: (accountId: number) =>
+    fetchJson<AnnualLimit[]>(`${BASE}/accounts/${accountId}/limits`),
+
+  setLimit: (accountId: number, year: number, annualLimit: number) =>
+    fetchJson<AnnualLimit>(`${BASE}/accounts/${accountId}/limits`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accountId, year, annualLimit }),
     }),
 }
 

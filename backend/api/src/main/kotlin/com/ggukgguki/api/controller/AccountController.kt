@@ -2,6 +2,8 @@ package com.ggukgguki.api.controller
 
 import com.ggukgguki.api.dto.AccountCreateRequest
 import com.ggukgguki.api.dto.AccountResult
+import com.ggukgguki.api.dto.AnnualLimitRequest
+import com.ggukgguki.api.dto.AnnualLimitResult
 import com.ggukgguki.api.service.AccountService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -26,4 +28,13 @@ class AccountController(
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody request: AccountCreateRequest): AccountResult = accountService.create(request)
+
+    @Operation(summary = "계좌 연도별 한도 조회")
+    @GetMapping("/{id}/limits")
+    fun getLimits(@PathVariable id: Long): List<AnnualLimitResult> = accountService.getLimits(id)
+
+    @Operation(summary = "계좌 연도별 한도 설정/수정")
+    @PutMapping("/{id}/limits")
+    fun setLimit(@PathVariable id: Long, @RequestBody request: AnnualLimitRequest): AnnualLimitResult =
+        accountService.setLimit(id, request)
 }
