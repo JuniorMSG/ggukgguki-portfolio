@@ -78,7 +78,7 @@ export default function DashboardPage() {
         <TotalAssetTab
           accounts={accounts} holdings={holdings} allocations={allocations}
           totalInvested={totalInvested} totalHoldingKRW={totalHoldingKRW} totalHoldingUSD={totalHoldingUSD}
-          allDca={allDca} year={year}
+          allDca={allDca} year={year} snapshots={snapshots}
         />
       )}
       {tab === '투자현황' && (
@@ -101,42 +101,95 @@ export default function DashboardPage() {
 }
 
 // ─── 총자산 탭 ───
-function TotalAssetTab({ accounts, holdings, allocations, totalInvested, totalHoldingKRW, totalHoldingUSD, allDca, year }: {
+function TotalAssetTab({ accounts, holdings, allocations, totalInvested, totalHoldingKRW, totalHoldingUSD, allDca, year, snapshots }: {
   accounts: Account[]; holdings: Holding[]; allocations: Allocation[]
   totalInvested: number; totalHoldingKRW: number; totalHoldingUSD: number
-  allDca: DcaRecord[]; year: number
+  allDca: DcaRecord[]; year: number; snapshots: WeeklySnapshot[]
 }) {
   const [expandedId, setExpandedId] = useState<number | null>(null)
 
+  // 최신 스냅샷
+  const yearSnapshots = snapshots.filter((s) => new Date(s.startDate).getFullYear() === year).sort((a, b) => b.startDate.localeCompare(a.startDate))
+  const latest = yearSnapshots[0]
+
+  // 연도별 순증가액
+  const snapshotYears = [...new Set(snapshots.map((s) => new Date(s.startDate).getFullYear()))].sort()
+  const yearlyChange: { year: number; change: number }[] = snapshotYears.map((y) => {
+    const ys = snapshots.filter((s) => new Date(s.startDate).getFullYear() === y).sort((a, b) => a.startDate.localeCompare(b.startDate))
+    const change = ys.reduce((s, snap) => s + snap.weeklyChange, 0)
+    return { year: y, change }
+  })
+
+  const fmtM = (n: number) => { if (Math.abs(n) >= 1e8) return `${(n/1e8).toFixed(1)}억`; if (Math.abs(n) >= 1e4) return `${Math.round(n/1e4).toLocaleString()}만`; return n.toLocaleString() }
+
   return (
     <>
-      {/* 요약 카드 */}
-      <div className="grid grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-          <p className="text-xs text-gray-400">계좌</p>
-          <p className="text-2xl font-bold text-gray-800">{accounts.length}개</p>
+      {/* 스냅샷 기반 자산 요약 */}
+      {latest ? (
+        <div className="grid grid-cols-4 gap-3">
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+            <p className="text-xs text-gray-400">자본 총액</p>
+            <p className="text-xl font-bold text-gray-800">{fmtM(latest.totalCapital)}</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+            <p className="text-xs text-gray-400">투자 자산</p>
+            <p className="text-xl font-bold text-blue-600">{fmtM(latest.totalInvestment)}</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+            <p className="text-xs text-gray-400">수익률</p>
+            <p className="text-xl font-bold text-green-600">{latest.returnRate}%</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+            <p className="text-xs text-gray-400">배당 (누적)</p>
+            <p className="text-xl font-bold text-gray-800">{fmtM(latest.totalDividend)}</p>
+          </div>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-          <p className="text-xs text-gray-400">보유종목</p>
-          <p className="text-2xl font-bold text-blue-600">{holdings.length}종목</p>
+      ) : (
+        <div className="grid grid-cols-4 gap-3">
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+            <p className="text-xs text-gray-400">계좌</p>
+            <p className="text-2xl font-bold text-gray-800">{accounts.length}개</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+            <p className="text-xs text-gray-400">보유종목</p>
+            <p className="text-2xl font-bold text-blue-600">{holdings.length}종목</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+            <p className="text-xs text-gray-400">매수총액 (KRW)</p>
+            <p className="text-xl font-bold text-gray-800">₩{Math.round(totalHoldingKRW).toLocaleString()}</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+            <p className="text-xs text-gray-400">매수총액 (USD)</p>
+            <p className="text-xl font-bold text-gray-800">${Math.round(totalHoldingUSD).toLocaleString()}</p>
+          </div>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-          <p className="text-xs text-gray-400">매수총액 (KRW)</p>
-          <p className="text-xl font-bold text-gray-800">₩{Math.round(totalHoldingKRW).toLocaleString()}</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-          <p className="text-xs text-gray-400">매수총액 (USD)</p>
-          <p className="text-xl font-bold text-gray-800">${Math.round(totalHoldingUSD).toLocaleString()}</p>
+      )}
+
+      {/* 매수/투자 요약 */}
+      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        <div className="grid grid-cols-3 gap-4 text-center">
+          <div><p className="text-xs text-gray-400">누적 투자금</p><p className="text-lg font-bold text-blue-600">{totalInvested.toLocaleString()}원</p></div>
+          <div><p className="text-xs text-gray-400">매수총액 (KRW)</p><p className="text-lg font-bold text-gray-700">₩{Math.round(totalHoldingKRW).toLocaleString()}</p></div>
+          <div><p className="text-xs text-gray-400">매수총액 (USD)</p><p className="text-lg font-bold text-gray-700">${Math.round(totalHoldingUSD).toLocaleString()}</p></div>
         </div>
       </div>
 
-      {/* 누적 투자금 */}
-      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <div className="flex justify-between items-center">
-          <h3 className="font-medium text-gray-700">누적 투자금</h3>
-          <span className="text-xl font-bold text-blue-600">{totalInvested.toLocaleString()}원</span>
+      {/* 연도별 순증가액 */}
+      {yearlyChange.length > 0 && (
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <h3 className="font-medium text-gray-700 mb-3">연도별 순증가액</h3>
+          <div className="grid grid-cols-4 gap-3">
+            {yearlyChange.map(({ year: y, change }) => (
+              <div key={y} className={`rounded-lg p-3 text-center ${y === year ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'}`}>
+                <p className="text-xs text-gray-400">{y}년</p>
+                <p className={`text-sm font-bold ${change >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                  {change >= 0 ? '+' : ''}{fmtM(change)}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 자산 비중 */}
       {allocations.length > 0 && (
