@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { accountApi, dcaApi, holdingApi } from '../api'
-import type { Account, AccountType, AnnualLimit, DcaRecord, Holding } from '../types'
+import { accountApi, dcaApi, holdingApi, cashAssetApi } from '../api'
+import type { Account, AccountType, AnnualLimit, CashAsset, DcaRecord, Holding } from '../types'
 
 const USER_ID = 1
 
@@ -314,6 +314,8 @@ export default function AccountsPage() {
   const [holdings, setHoldings] = useState<Holding[]>([])
   const [refreshKey, setRefreshKey] = useState(0)
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null)
+  const [showCashDetail, setShowCashDetail] = useState(false)
+  const [cashAssets, setCashAssets] = useState<CashAsset[]>([])
   const [showAddForm, setShowAddForm] = useState(false)
   const [newName, setNewName] = useState('')
   const [newType, setNewType] = useState<AccountType>('GENERAL')
@@ -337,6 +339,7 @@ export default function AccountsPage() {
   useEffect(() => {
     accountApi.getByUserId(USER_ID).then(setAccounts)
     holdingApi.getAll().then(setHoldings).catch(() => {})
+    cashAssetApi.getAll(USER_ID).then(setCashAssets).catch(() => {})
     // 전체 DCA 조회 (2019~현재)
     const promises = Array.from({ length: currentYear - 2018 }, (_, i) => 2019 + i)
       .map((y) => dcaApi.getByYear(y))
@@ -344,6 +347,66 @@ export default function AccountsPage() {
   }, [refreshKey, currentYear])
 
   const selectedAccount = accounts.find((a) => a.id === selectedAccountId)
+  const cashTotal = cashAssets.reduce((s, c) => s + c.balance, 0)
+  const fixedTotal = cashAssets.filter((c) => c.category === 'FIXED').reduce((s, c) => s + c.balance, 0)
+  const liquidTotal = cashAssets.filter((c) => c.category === 'LIQUID').reduce((s, c) => s + c.balance, 0)
+
+  if (showCashDetail) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <button onClick={() => setShowCashDetail(false)}
+            className="text-sm px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">← 돌아가기</button>
+          <h2 className="text-xl font-bold text-gray-800">현금성 자산</h2>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+            <p className="text-xs text-gray-400">현금 총액</p>
+            <p className="text-lg font-bold text-gray-800">{cashTotal.toLocaleString()}원</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+            <p className="text-xs text-gray-400">비유동</p>
+            <p className="text-lg font-bold text-gray-500">{fixedTotal.toLocaleString()}원</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+            <p className="text-xs text-gray-400">유동</p>
+            <p className="text-lg font-bold text-blue-600">{liquidTotal.toLocaleString()}원</p>
+          </div>
+        </div>
+
+        {['FIXED', 'LIQUID'].map((cat) => {
+          const items = cashAssets.filter((c) => c.category === cat)
+          if (items.length === 0) return null
+          return (
+            <div key={cat} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <h3 className="font-medium text-gray-700 mb-3">{cat === 'FIXED' ? '비유동 자산' : '유동 자산'}</h3>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-gray-400 text-xs border-b border-gray-200">
+                    <th className="py-2 text-left font-medium">자산명</th>
+                    <th className="py-2 text-right font-medium">잔액</th>
+                    <th className="py-2 text-right font-medium">이율</th>
+                    <th className="py-2 text-left font-medium">메모</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((c) => (
+                    <tr key={c.id} className="border-b border-gray-50">
+                      <td className="py-2 text-gray-700 font-medium">{c.name}</td>
+                      <td className="py-2 text-right text-gray-800">{c.balance.toLocaleString()}원</td>
+                      <td className="py-2 text-right text-blue-600">{c.interestRate > 0 ? `${c.interestRate}%` : '-'}</td>
+                      <td className="py-2 text-gray-400">{c.memo || ''}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
 
   if (selectedAccount) {
     return (
@@ -421,6 +484,35 @@ export default function AccountsPage() {
             </div>
           )
         })}
+
+        {/* 현금 총괄 카드 */}
+        {cashAssets.length > 0 && (
+          <div onClick={() => setShowCashDetail(true)}
+            className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 shadow-sm border border-green-100 cursor-pointer hover:shadow-md hover:border-green-300 transition-all">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-gray-800">현금성 자산</h3>
+              <span className="text-xs px-2 py-0.5 bg-green-100 text-green-600 rounded-full">CASH</span>
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">총액</span>
+                <span className="text-green-700 font-bold">{cashTotal.toLocaleString()}원</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">비유동</span>
+                <span className="text-gray-600">{fixedTotal.toLocaleString()}원</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">유동</span>
+                <span className="text-gray-600">{liquidTotal.toLocaleString()}원</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">항목</span>
+                <span className="text-gray-600">{cashAssets.length}개</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 계좌 추가 카드 */}
         {showAddForm ? (

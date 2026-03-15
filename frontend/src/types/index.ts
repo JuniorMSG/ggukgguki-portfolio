@@ -37,6 +37,16 @@ export interface Holding {
   totalAmount: number
 }
 
+export interface CashAsset {
+  id: number
+  name: string
+  category: 'FIXED' | 'LIQUID'
+  balance: number
+  interestRate: number
+  maturityDate: string | null
+  memo: string | null
+}
+
 export interface WeeklySnapshot {
   id: number
   weekLabel: string
