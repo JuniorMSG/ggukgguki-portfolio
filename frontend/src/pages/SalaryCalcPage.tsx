@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
+import simpleTaxTable2026 from '../data/simpleTaxTable2026.json'
 
 // ══════════════════════════════════════════════
 // 연도별 4대보험 + 세율
@@ -75,6 +76,47 @@ function calcIncomeTax(taxable: number): number {
   return 0
 }
 
+// ══════════════════════════════════════════════
+// 간이세액표 (2026년 3월 시행, 국세청 기준)
+// 월급여액(원) → 부양가족수별 세액(원)
+// index 0 = 부양가족1명, index 1 = 2명, ...
+// ══════════════════════════════════════════════
+// 국세청 간이세액표 (2026, 646개 구간)
+// 형식: [이상(천원), 미만(천원), [부양가족1명~11명 세액(원)]]
+const TAX_TABLE: [number, number, number[]][] = simpleTaxTable2026 as [number, number, number[]][]
+
+function lookupSimpleTax(monthlyTaxable: number, dependents: number): number {
+  const depIdx = Math.min(Math.max(dependents - 1, 0), 10) // 1~11명 → index 0~10
+  const salaryInThousand = monthlyTaxable / 1000
+
+  // 테이블 범위 밖
+  if (salaryInThousand < TAX_TABLE[0][0]) return 0
+
+  // 1천만원(10,000천원) 초과: 공식 적용
+  const lastRow = TAX_TABLE[TAX_TABLE.length - 1]
+  if (salaryInThousand >= lastRow[1]) {
+    const baseTax = lastRow[2][depIdx]
+    const excess = monthlyTaxable - lastRow[1] * 1000
+    return baseTax + Math.round(excess * 0.45)
+  }
+
+  // 구간 조회
+  for (const [low, high, taxes] of TAX_TABLE) {
+    if (salaryInThousand >= low && salaryInThousand < high) {
+      return taxes[depIdx]
+    }
+  }
+  return 0
+}
+
+// 자녀세액공제 (8세 이상 20세 이하)
+function childTaxCredit(children: number): number {
+  if (children <= 0) return 0
+  if (children === 1) return 12_500
+  if (children === 2) return 29_160
+  return 29_160 + (children - 2) * 25_000
+}
+
 interface CalcResult {
   grossMonthly: number
   pension: number
@@ -91,26 +133,22 @@ interface CalcResult {
   deductionRate: number
 }
 
-function calculate(annualSalary: number, dependents: number, cfg: SalaryConfig): CalcResult {
+function calculate(annualSalary: number, dependents: number, monthlyNonTaxable: number, cfg: SalaryConfig, children = 0): CalcResult {
   const monthly = annualSalary / 12
+  const taxableMonthly = Math.max(monthly - monthlyNonTaxable, 0)
 
-  // 4대보험 (월 기준)
-  const pensionBase = Math.max(Math.min(monthly, cfg.nationalPensionCeilMonthly), cfg.nationalPensionFloorMonthly)
+  // 4대보험 (과세 월급 기준)
+  const pensionBase = Math.max(Math.min(taxableMonthly, cfg.nationalPensionCeilMonthly), cfg.nationalPensionFloorMonthly)
   const pension = Math.round(pensionBase * cfg.nationalPension)
-  const health = Math.round(monthly * cfg.healthInsurance)
+  const health = Math.round(taxableMonthly * cfg.healthInsurance)
   const longTermCare = Math.round(health * cfg.longTermCareRate)
-  const employment = Math.round(monthly * cfg.employmentInsurance)
+  const employment = Math.round(taxableMonthly * cfg.employmentInsurance)
   const totalInsurance = pension + health + longTermCare + employment
 
-  // 근로소득세 (연간 계산 → 월 환산)
-  const earnedDeduction = calcEarnedIncomeDeduction(annualSalary)
-  const personalDeduction = 1_500_000 * Math.max(dependents, 1) // 인적공제 (본인 포함)
-  const insuranceDeduction = totalInsurance * 12 // 보험료 소득공제
-  const standardDeduction = 130_000 // 표준세액공제 (13만원, 특별소득공제 미적용 시)
-
-  const taxableIncome = Math.max(annualSalary - earnedDeduction - personalDeduction - insuranceDeduction, 0)
-  const annualIncomeTax = Math.max(calcIncomeTax(taxableIncome) - standardDeduction, 0)
-  const incomeTax = Math.round(annualIncomeTax / 12)
+  // 근로소득세 (국세청 간이세액표 직접 조회)
+  const simpleTax = lookupSimpleTax(taxableMonthly, dependents)
+  const childCredit = childTaxCredit(children)
+  const incomeTax = Math.max(simpleTax - childCredit, 0)
   const localTax = Math.round(incomeTax * cfg.localIncomeTaxRate)
   const totalTax = incomeTax + localTax
 
@@ -153,14 +191,46 @@ const PRESETS = [
   { label: '2억', value: 200_000_000 },
 ]
 
+function MoneyInput({ value, onChange, className = '' }: { value: number; onChange: (v: number) => void; className?: string }) {
+  const [display, setDisplay] = useState(value.toLocaleString())
+  const isFocused = useRef(false)
+
+  useEffect(() => {
+    if (!isFocused.current) setDisplay(value.toLocaleString())
+  }, [value])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/,/g, '')
+    if (raw === '' || raw === '-') { setDisplay(''); onChange(0); return }
+    const num = Number(raw)
+    if (!isNaN(num)) { setDisplay(num.toLocaleString()); onChange(num) }
+  }
+
+  return (
+    <input type="text" inputMode="numeric" value={display} onChange={handleChange}
+      onFocus={() => { isFocused.current = true }}
+      onBlur={() => { isFocused.current = false; setDisplay(value.toLocaleString()) }}
+      className={`border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 ${className}`} />
+  )
+}
+
 export default function SalaryCalcPage() {
   const [selectedYear, setSelectedYear] = useState(2026)
+  const [inputMode, setInputMode] = useState<'annual' | 'monthly'>('annual')
   const [annualSalary, setAnnualSalary] = useState(50_000_000)
   const [dependents, setDependents] = useState(1)
+  const [children, setChildren] = useState(0)
+  const [monthlyNonTaxable, setMonthlyNonTaxable] = useState(200_000)
   const [showRates, setShowRates] = useState(false)
 
+  const handleSalaryChange = (v: number) => {
+    if (inputMode === 'monthly') setAnnualSalary(v * 12)
+    else setAnnualSalary(v)
+  }
+  const displaySalary = inputMode === 'monthly' ? Math.round(annualSalary / 12) : annualSalary
+
   const cfg = SALARY_CONFIGS[selectedYear]
-  const result = useMemo(() => calculate(annualSalary, dependents, cfg), [annualSalary, dependents, cfg])
+  const result = useMemo(() => calculate(annualSalary, dependents, monthlyNonTaxable, cfg, children), [annualSalary, dependents, monthlyNonTaxable, cfg, children])
 
   return (
     <div className="space-y-6">
@@ -236,30 +306,68 @@ export default function SalaryCalcPage() {
       </div>
 
       {/* 입력 */}
-      <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 space-y-5">
+      <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            연봉 (세전): <span className="text-blue-600 font-bold">{fmt(annualSalary)}</span>
-            <span className="text-xs text-gray-400 ml-1">(월 {fmt(annualSalary / 12)})</span>
-          </label>
-          <div className="flex gap-2 mb-2 flex-wrap">
-            {PRESETS.map((p) => (
-              <button key={p.value} onClick={() => setAnnualSalary(p.value)}
-                className={`px-3 py-1 rounded-full text-xs transition-colors ${annualSalary === p.value ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                {p.label}
+          <div className="flex items-center gap-3 mb-2">
+            <div className="flex rounded-lg overflow-hidden border border-gray-200">
+              <button type="button" onClick={() => setInputMode('monthly')}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors ${inputMode === 'monthly' ? 'bg-blue-500 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}>
+                월급
               </button>
-            ))}
+              <button type="button" onClick={() => setInputMode('annual')}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors ${inputMode === 'annual' ? 'bg-blue-500 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}>
+                연봉
+              </button>
+            </div>
+            {inputMode === 'annual' && (
+              <div className="flex gap-1.5 flex-wrap">
+                {PRESETS.map((p) => (
+                  <button key={p.value} onClick={() => setAnnualSalary(p.value)}
+                    className={`px-2.5 py-1 rounded-full text-xs transition-colors ${annualSalary === p.value ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <input type="range" min={20_000_000} max={300_000_000} step={1_000_000}
-            value={annualSalary} onChange={(e) => setAnnualSalary(Number(e.target.value))} className="w-full accent-blue-500" />
+          <div className="flex items-center gap-2">
+            <MoneyInput value={displaySalary} onChange={handleSalaryChange} className="w-48" />
+            <span className="text-sm text-gray-500">원</span>
+            <span className="text-xs text-gray-400">
+              {inputMode === 'annual'
+                ? `(월 ${fmtWon(annualSalary / 12)})`
+                : `(연봉 ${fmtWon(annualSalary)})`}
+            </span>
+          </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            부양가족 수 (본인 포함): <span className="text-blue-600">{dependents}명</span>
-          </label>
-          <input type="range" min={1} max={7} step={1}
-            value={dependents} onChange={(e) => setDependents(Number(e.target.value))} className="w-full accent-blue-500" />
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">비과세액 (월)</label>
+            <div className="flex items-center gap-1">
+              <MoneyInput value={monthlyNonTaxable} onChange={setMonthlyNonTaxable} className="w-full" />
+              <span className="text-xs text-gray-400 shrink-0">원</span>
+            </div>
+            <p className="text-xs text-gray-300 mt-0.5">식대 20만 등</p>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">부양가족 수 (본인 포함)</label>
+            <div className="flex items-center gap-1">
+              <input type="number" value={dependents} min={1} max={10}
+                onChange={(e) => setDependents(Math.max(1, Number(e.target.value)))}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-300" />
+              <span className="text-xs text-gray-400 shrink-0">명</span>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">20세 이하 자녀수</label>
+            <div className="flex items-center gap-1">
+              <input type="number" value={children} min={0} max={10}
+                onChange={(e) => setChildren(Math.max(0, Number(e.target.value)))}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-300" />
+              <span className="text-xs text-gray-400 shrink-0">명</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -334,7 +442,7 @@ export default function SalaryCalcPage() {
             </thead>
             <tbody>
               {PRESETS.map((p) => {
-                const r = calculate(p.value, dependents, cfg)
+                const r = calculate(p.value, dependents, monthlyNonTaxable, cfg, children)
                 return (
                   <tr key={p.value} className={`border-b border-gray-50 ${annualSalary === p.value ? 'bg-blue-50' : ''}`}>
                     <td className="py-2 px-1 font-medium text-gray-600">{p.label}</td>
@@ -347,14 +455,14 @@ export default function SalaryCalcPage() {
             </tbody>
           </table>
         </div>
-        <p className="text-xs text-gray-400 mt-2">* 부양가족 {dependents}명 기준 / {cfg.year}년 요율 적용</p>
+        <p className="text-xs text-gray-400 mt-2">* 부양가족 {dependents}명, 비과세 월 {fmtWon(monthlyNonTaxable)} 기준 / {cfg.year}년 요율 적용</p>
       </div>
 
       {/* 참고 */}
       <div className="bg-gray-50 rounded-xl p-4 text-xs text-gray-400 space-y-1">
         <p className="font-medium text-gray-500">참고</p>
-        <p>• 간이세액표 근사치로 계산 (실제 급여명세서와 차이 있을 수 있음)</p>
-        <p>• 비과세 수당 (식대 20만, 차량유지비 등) 미반영</p>
+        <p>• 국세청 간이세액표 원본 데이터 적용 (646개 구간, 부양가족 1~11명)</p>
+        <p>• 비과세 수당 반영 (기본 월 20만원, 식대/차량유지비 등)</p>
         <p>• 연말정산 시 추가 공제/환급 발생 가능</p>
         <p>• 성과급, 상여금 별도 시 세율 차이 발생</p>
       </div>

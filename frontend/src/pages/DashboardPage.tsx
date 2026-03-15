@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { accountApi, assetClassApi, dcaApi } from '../api'
-import type { Account, Allocation, DcaRecord } from '../types'
+import { accountApi, assetClassApi, dcaApi, holdingApi } from '../api'
+import type { Account, Allocation, DcaRecord, Holding } from '../types'
 
 const USER_ID = 1
 
@@ -18,13 +18,27 @@ export default function DashboardPage() {
   const [accounts, setAccounts] = useState<Account[]>([])
   const [allocations, setAllocations] = useState<Allocation[]>([])
   const [dcaRecords, setDcaRecords] = useState<DcaRecord[]>([])
+  const [holdings, setHoldings] = useState<Holding[]>([])
+  const [expandedAccounts, setExpandedAccounts] = useState<Set<number>>(new Set())
   const year = new Date().getFullYear()
 
   useEffect(() => {
     accountApi.getByUserId(USER_ID).then(setAccounts)
     assetClassApi.getAllocations(USER_ID).then(setAllocations).catch(() => {})
     dcaApi.getByYear(year).then(setDcaRecords)
+    holdingApi.getAll().then(setHoldings).catch(() => {})
   }, [year])
+
+  const toggleAccount = (accountId: number) => {
+    setExpandedAccounts((prev) => {
+      const next = new Set(prev)
+      next.has(accountId) ? next.delete(accountId) : next.add(accountId)
+      return next
+    })
+  }
+
+  const getHoldingsByAccount = (accountId: number) =>
+    holdings.filter((h) => h.accountId === accountId)
 
   const totalInvested = dcaRecords.reduce((sum, r) => sum + r.amount, 0)
   const totalLimit = accounts.reduce((sum, a) => sum + (a.annualLimit || 0), 0)
@@ -92,14 +106,24 @@ export default function DashboardPage() {
             const limit = account.annualLimit
             const ratio = limit ? Math.min((invested / limit) * 100, 100) : 0
 
+            const accountHoldings = getHoldingsByAccount(account.id)
+            const isExpanded = expandedAccounts.has(account.id)
+
             return (
               <div key={account.id}>
-                <div className="flex items-center justify-between mb-1">
+                <div
+                  className="flex items-center justify-between mb-1 cursor-pointer hover:bg-gray-50 rounded -mx-1 px-1"
+                  onClick={() => toggleAccount(account.id)}
+                >
                   <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">{isExpanded ? '▼' : '▶'}</span>
                     <span className="text-sm font-medium text-gray-700">{account.name}</span>
                     <span className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-400 rounded">
                       {ACCOUNT_TYPE_LABEL[account.accountType]}
                     </span>
+                    {accountHoldings.length > 0 && (
+                      <span className="text-xs text-gray-400">{accountHoldings.length}종목</span>
+                    )}
                   </div>
                   <span className="text-sm text-gray-600">
                     {invested.toLocaleString()}원
@@ -117,6 +141,25 @@ export default function DashboardPage() {
                     />
                   </div>
                 ) : null}
+                {isExpanded && (
+                  <div className="mt-2 ml-6 mb-2">
+                    {accountHoldings.length > 0 ? (
+                      <div className="space-y-1">
+                        {accountHoldings.map((h) => (
+                          <div key={h.id} className="flex items-center justify-between text-xs text-gray-500 py-0.5">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-gray-600">{h.ticker}</span>
+                              <span>{h.name}</span>
+                            </div>
+                            <span className="text-gray-400">{h.currency}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400">보유종목 없음</p>
+                    )}
+                  </div>
+                )}
               </div>
             )
           })}

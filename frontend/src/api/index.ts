@@ -1,4 +1,4 @@
-import type { Account, Allocation, AssetClass, CashflowCategory, CashflowRecord, DcaRecord } from '../types'
+import type { Account, Allocation, AssetClass, CashflowCategory, CashflowRecord, DcaRecord, Holding } from '../types'
 
 const BASE = '/api'
 
@@ -54,6 +54,14 @@ export const dcaApi = {
 
   delete: (id: number) =>
     fetch(`${BASE}/dca/${id}`, { method: 'DELETE' }),
+}
+
+export const holdingApi = {
+  getAll: () =>
+    fetchJson<Holding[]>(`${BASE}/holdings`),
+
+  getByAccount: (accountId: number) =>
+    fetchJson<Holding[]>(`${BASE}/holdings?accountId=${accountId}`),
 }
 
 export const cashflowApi = {
