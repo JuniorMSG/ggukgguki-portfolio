@@ -70,4 +70,14 @@ class CashAssetController(
         entity.updatedAt = LocalDateTime.now()
         return CashAssetResult.from(cashAssetRepository.save(entity))
     }
+
+    @Operation(summary = "현금성 자산 삭제")
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun delete(@PathVariable id: Long) {
+        val entity = cashAssetRepository.findById(id).orElseThrow { IllegalArgumentException("자산 없음: $id") }
+        entity.isActive = false
+        entity.updatedAt = LocalDateTime.now()
+        cashAssetRepository.save(entity)
+    }
 }

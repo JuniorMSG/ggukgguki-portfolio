@@ -3,7 +3,7 @@ import { useState } from 'react'
 
 const mainLinks = [
   { to: '/', label: '대시보드' },
-  { to: '/accounts', label: '계좌' },
+  { to: '/accounts', label: '자산' },
   { to: '/assets', label: '자산배분' },
   { to: '/dca', label: 'DCA' },
   { to: '/cashflow', label: '수입/지출' },
