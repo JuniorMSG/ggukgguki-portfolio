@@ -12,7 +12,7 @@ export default function DcaPage() {
   const [allRecords, setAllRecords] = useState<DcaRecord[]>([])
   const [selectedYear, setSelectedYear] = useState<number>(0) // 0 = 전체
   const [editingId, setEditingId] = useState<number | null>(null)
-  const [editData, setEditData] = useState({ accountId: 0, amount: '', memo: '' })
+  const [editData, setEditData] = useState({ accountId: 0, amount: 0, memo: '' })
 
   const now = new Date()
   const currentYear = now.getFullYear()
@@ -161,10 +161,10 @@ export default function DcaPage() {
                             className="border border-blue-300 rounded px-1.5 py-0.5 text-xs w-full focus:outline-none" />
                         </td>
                         <td className="py-1.5 text-right whitespace-nowrap">
-                          <MoneyInput value={Number(editData.amount)} onChange={(v) => setEditData({ ...editData, amount: String(v) })}
+                          <MoneyInput value={editData.amount} onChange={(v) => setEditData({ ...editData, amount: v })}
                             className="!border-blue-300 !rounded !px-1.5 !py-0.5 !text-xs w-28 text-right mr-2" />
                           <button onClick={async () => {
-                            await dcaApi.update(r.id, { accountId: editData.accountId, amount: Number(editData.amount), memo: editData.memo })
+                            await dcaApi.update(r.id, { accountId: editData.accountId, amount: editData.amount, memo: editData.memo })
                             setEditingId(null); setRefreshKey((k) => k + 1)
                           }} className="text-xs px-2 py-0.5 bg-blue-500 text-white rounded mr-1">저장</button>
                           <button onClick={async () => { await dcaApi.delete(r.id); setEditingId(null); setRefreshKey((k) => k + 1) }}
@@ -177,7 +177,7 @@ export default function DcaPage() {
                   }
                   return (
                     <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50 cursor-pointer"
-                      onClick={() => { setEditingId(r.id); setEditData({ accountId: r.accountId, amount: String(r.amount), memo: r.memo || '' }) }}>
+                      onClick={() => { setEditingId(r.id); setEditData({ accountId: r.accountId, amount: r.amount, memo: r.memo || '' }) }}>
                       <td className="py-1.5 text-gray-500">{r.recordDate}</td>
                       <td className="py-1.5 text-gray-600">{accountName(r.accountId)}</td>
                       <td className="py-1.5 text-gray-400">{r.memo}</td>
