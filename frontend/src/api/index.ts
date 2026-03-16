@@ -203,6 +203,13 @@ export const dcaApi = {
       body: JSON.stringify(data),
     }),
 
+  update: (id: number, data: { accountId?: number; amount?: number; recordDate?: string; memo?: string }) =>
+    fetchJson<DcaRecord>(`${BASE}/dca/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }),
+
   delete: (id: number) =>
     fetchVoid(`${BASE}/dca/${id}`, { method: 'DELETE' }),
 }

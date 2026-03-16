@@ -1,6 +1,7 @@
 package com.ggukgguki.api.controller
 
 import com.ggukgguki.api.dto.DcaCreateRequest
+import com.ggukgguki.api.dto.DcaUpdateRequest
 import com.ggukgguki.api.dto.DcaResult
 import com.ggukgguki.api.service.DcaService
 import io.swagger.v3.oas.annotations.Operation
@@ -36,6 +37,14 @@ class DcaController(
         @RequestBody request: DcaCreateRequest,
         @AuthenticationPrincipal userId: Long
     ): DcaResult = dcaService.create(request, userId)
+
+    @Operation(summary = "DCA 기록 수정", description = "계좌, 금액, 날짜, 메모를 수정합니다")
+    @PutMapping("/{id}")
+    fun update(
+        @PathVariable id: Long,
+        @RequestBody request: DcaUpdateRequest,
+        @AuthenticationPrincipal userId: Long
+    ): DcaResult = dcaService.update(id, request, userId)
 
     @Operation(summary = "DCA 기록 삭제", description = "적립식 투자 기록을 삭제합니다")
     @DeleteMapping("/{id}")

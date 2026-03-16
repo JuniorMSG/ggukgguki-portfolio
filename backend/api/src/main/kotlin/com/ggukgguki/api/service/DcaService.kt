@@ -1,6 +1,7 @@
 package com.ggukgguki.api.service
 
 import com.ggukgguki.api.dto.DcaCreateRequest
+import com.ggukgguki.api.dto.DcaUpdateRequest
 import com.ggukgguki.api.dto.DcaResult
 import com.ggukgguki.api.security.OwnershipChecker
 import com.ggukgguki.core.domain.account.AccountRepository
@@ -42,6 +43,22 @@ class DcaService(
             recordDate = request.recordDate,
             memo = request.memo
         )
+        return DcaResult.from(dcaRecordRepository.save(record))
+    }
+
+    @Transactional
+    fun update(id: Long, request: DcaUpdateRequest, userId: Long): DcaResult {
+        ownershipChecker.checkDcaOwner(id, userId)
+        val record = dcaRecordRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("기록을 찾을 수 없어요: $id") }
+        request.accountId?.let {
+            ownershipChecker.checkAccountOwner(it, userId)
+            val account = accountRepository.findById(it).orElseThrow { IllegalArgumentException("계좌를 찾을 수 없어요: $it") }
+            record.account = account
+        }
+        request.amount?.let { record.amount = it }
+        request.recordDate?.let { record.recordDate = it }
+        request.memo?.let { record.memo = it }
         return DcaResult.from(dcaRecordRepository.save(record))
     }
 

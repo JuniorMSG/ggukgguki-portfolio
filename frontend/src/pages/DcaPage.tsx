@@ -10,6 +10,8 @@ export default function DcaPage() {
   const [accounts, setAccounts] = useState<Account[]>([])
   const [allRecords, setAllRecords] = useState<DcaRecord[]>([])
   const [selectedYear, setSelectedYear] = useState<number>(0) // 0 = 전체
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editData, setEditData] = useState({ accountId: 0, amount: '', memo: '' })
 
   const now = new Date()
   const currentYear = now.getFullYear()
@@ -138,19 +140,56 @@ export default function DcaPage() {
                   <th className="py-2 text-left font-medium">계좌</th>
                   <th className="py-2 text-left font-medium">메모</th>
                   <th className="py-2 text-right font-medium">금액</th>
+                  <th className="py-2 w-24"></th>
                 </tr>
               </thead>
               <tbody>
-                {sortedRecords.map((r) => (
-                  <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50">
-                    <td className="py-1.5 text-gray-500">{r.recordDate}</td>
-                    <td className="py-1.5 text-gray-600">{accountName(r.accountId)}</td>
-                    <td className="py-1.5 text-gray-400">{r.memo}</td>
-                    <td className={`py-1.5 text-right font-medium ${r.amount < 0 ? 'text-red-500' : 'text-gray-700'}`}>
-                      {r.amount.toLocaleString()}원
-                    </td>
-                  </tr>
-                ))}
+                {sortedRecords.map((r) => {
+                  const isEditing = editingId === r.id
+                  if (isEditing) {
+                    return (
+                      <tr key={r.id} className="border-b border-gray-50 bg-blue-50/30">
+                        <td className="py-1.5 text-gray-500">{r.recordDate}</td>
+                        <td className="py-1.5">
+                          <select value={editData.accountId} onChange={(e) => setEditData({ ...editData, accountId: Number(e.target.value) })}
+                            className="border border-blue-300 rounded px-1.5 py-0.5 text-xs focus:outline-none">
+                            {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                          </select>
+                        </td>
+                        <td className="py-1.5">
+                          <input type="text" value={editData.memo} onChange={(e) => setEditData({ ...editData, memo: e.target.value })}
+                            className="border border-blue-300 rounded px-1.5 py-0.5 text-xs w-full focus:outline-none" />
+                        </td>
+                        <td className="py-1.5 text-right">
+                          <input type="number" value={editData.amount} onChange={(e) => setEditData({ ...editData, amount: e.target.value })}
+                            className="border border-blue-300 rounded px-1.5 py-0.5 text-xs w-24 text-right focus:outline-none" />
+                        </td>
+                        <td className="py-1.5 text-right whitespace-nowrap">
+                          <button onClick={async () => {
+                            await dcaApi.update(r.id, { accountId: editData.accountId, amount: Number(editData.amount), memo: editData.memo })
+                            setEditingId(null); setRefreshKey((k) => k + 1)
+                          }} className="text-xs px-2 py-0.5 bg-blue-500 text-white rounded mr-1">저장</button>
+                          <button onClick={async () => { await dcaApi.delete(r.id); setEditingId(null); setRefreshKey((k) => k + 1) }}
+                            className="text-xs px-2 py-0.5 bg-red-100 text-red-500 rounded mr-1">삭제</button>
+                          <button onClick={() => setEditingId(null)}
+                            className="text-xs px-2 py-0.5 bg-gray-100 text-gray-400 rounded">취소</button>
+                        </td>
+                      </tr>
+                    )
+                  }
+                  return (
+                    <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50 cursor-pointer"
+                      onClick={() => { setEditingId(r.id); setEditData({ accountId: r.accountId, amount: String(r.amount), memo: r.memo || '' }) }}>
+                      <td className="py-1.5 text-gray-500">{r.recordDate}</td>
+                      <td className="py-1.5 text-gray-600">{accountName(r.accountId)}</td>
+                      <td className="py-1.5 text-gray-400">{r.memo}</td>
+                      <td className={`py-1.5 text-right font-medium ${r.amount < 0 ? 'text-red-500' : 'text-gray-700'}`}>
+                        {r.amount.toLocaleString()}원
+                      </td>
+                      <td className="py-1.5 text-right"><span className="text-xs text-gray-300">수정</span></td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

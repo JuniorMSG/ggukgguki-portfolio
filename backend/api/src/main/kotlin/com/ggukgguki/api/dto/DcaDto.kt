@@ -16,6 +16,14 @@ data class DcaCreateRequest(
     val memo: String? = null
 )
 
+@Schema(description = "DCA 기록 수정 요청")
+data class DcaUpdateRequest(
+    val accountId: Long? = null,
+    val amount: Long? = null,
+    val recordDate: LocalDate? = null,
+    val memo: String? = null
+)
+
 @Schema(description = "DCA 기록 정보")
 data class DcaResult(
     val id: Long,
