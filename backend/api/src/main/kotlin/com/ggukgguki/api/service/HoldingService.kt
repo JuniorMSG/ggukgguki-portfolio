@@ -31,6 +31,7 @@ class HoldingService(
             .orElseThrow { IllegalArgumentException("종목을 찾을 수 없어요: $id") }
         request.quantity?.let { holding.quantity = it }
         request.avgPrice?.let { holding.avgPrice = it }
+        request.ticker?.let { holding.ticker = it }
         request.name?.let { holding.name = it }
         request.memo?.let { holding.memo = it }
         holding.updatedAt = java.time.LocalDateTime.now()

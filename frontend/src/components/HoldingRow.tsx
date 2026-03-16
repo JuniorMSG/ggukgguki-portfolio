@@ -18,7 +18,7 @@ export default function HoldingRow({ h, onUpdated }: { h: Holding; onUpdated: ()
   const handleSave = async () => {
     setSaving(true)
     try {
-      await holdingApi.update(h.id, { quantity: qty, avgPrice, name, memo: memo || undefined })
+      await holdingApi.update(h.id, { ticker, quantity: qty, avgPrice, name, memo: memo || undefined })
       setEditing(false)
       onUpdated()
     } finally { setSaving(false) }
@@ -33,7 +33,10 @@ export default function HoldingRow({ h, onUpdated }: { h: Holding; onUpdated: ()
   if (editing) {
     return (
       <tr className="border-b border-gray-50 bg-blue-50/30">
-        <td className="py-2 font-mono text-gray-600 text-sm">{h.ticker}</td>
+        <td className="py-2">
+          <input type="text" value={ticker} onChange={(e) => setTicker(e.target.value)}
+            className="border border-blue-300 rounded px-2 py-1 text-sm font-mono w-20 focus:outline-none" />
+        </td>
         <td className="py-2">
           <input type="text" value={name} onChange={(e) => setName(e.target.value)}
             className="border border-blue-300 rounded px-2 py-1 text-sm w-full focus:outline-none" />

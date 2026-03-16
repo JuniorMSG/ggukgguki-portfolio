@@ -258,12 +258,12 @@ export default function AssetDetailPage() {
           <table className="w-full">
             <thead>
               <tr className="text-gray-400 text-xs border-b border-gray-200">
-                <th className="text-left py-2 font-medium">티커</th>
-                <th className="text-left py-2 font-medium">종목명 ✏️</th>
-                <th className="text-right py-2 font-medium">수량 ✏️</th>
+                <th className="text-left py-2 font-medium">티커<span className="text-red-400">*</span></th>
+                <th className="text-left py-2 font-medium">종목명<span className="text-red-400">*</span></th>
+                <th className="text-right py-2 font-medium">수량<span className="text-red-400">*</span></th>
                 <th className="text-right py-2 font-medium">매수가</th>
-                <th className="text-right py-2 font-medium">매수금액 ✏️</th>
-                <th className="text-left py-2 font-medium">메모 ✏️</th>
+                <th className="text-right py-2 font-medium pr-4">매수금액<span className="text-red-400">*</span></th>
+                <th className="text-left py-2 font-medium pl-4">메모<span className="text-red-400">*</span></th>
                 <th className="py-2 w-24"></th>
               </tr>
             </thead>

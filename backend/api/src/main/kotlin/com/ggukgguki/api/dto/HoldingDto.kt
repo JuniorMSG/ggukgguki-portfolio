@@ -4,6 +4,7 @@ import com.ggukgguki.core.domain.holding.Holding
 import java.math.BigDecimal
 
 data class HoldingUpdateRequest(
+    val ticker: String? = null,
     val quantity: BigDecimal? = null,
     val avgPrice: BigDecimal? = null,
     val name: String? = null,

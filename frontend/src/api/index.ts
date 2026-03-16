@@ -235,7 +235,7 @@ export const holdingApi = {
       body: JSON.stringify(data),
     }),
 
-  update: (id: number, data: { quantity?: number; avgPrice?: number; name?: string }) =>
+  update: (id: number, data: { ticker?: string; quantity?: number; avgPrice?: number; name?: string; memo?: string }) =>
     fetchJson<Holding>(`${BASE}/holdings/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
