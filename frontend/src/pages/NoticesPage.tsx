@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { noticeApi } from '../api'
 import { useAuth } from '../contexts/AuthContext'
 import type { Notice } from '../types'
@@ -6,12 +6,13 @@ import type { Notice } from '../types'
 export default function NoticesPage() {
   const { isAdmin } = useAuth()
   const [notices, setNotices] = useState<Notice[]>([])
-  const [selected, setSelected] = useState<Notice | null>(null)
+  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [detail, setDetail] = useState<Notice | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
+  const viewedRef = useRef<Set<number>>(new Set())
 
-  // 작성 폼
   const [formTitle, setFormTitle] = useState('')
   const [formContent, setFormContent] = useState('')
   const [formPinned, setFormPinned] = useState(false)
@@ -25,6 +26,18 @@ export default function NoticesPage() {
 
   useEffect(load, [page])
 
+  // 상세 진입 시 조회수 증가 (세션 내 1회만)
+  useEffect(() => {
+    if (selectedId && !viewedRef.current.has(selectedId)) {
+      viewedRef.current.add(selectedId)
+      noticeApi.getById(selectedId).then(setDetail).catch(() => {})
+    } else if (selectedId) {
+      // 이미 조회한 글은 목록 데이터에서 가져옴
+      const found = notices.find((n) => n.id === selectedId)
+      if (found) setDetail(found)
+    }
+  }, [selectedId])
+
   const handleCreate = async () => {
     if (!formTitle.trim() || !formContent.trim()) return
     await noticeApi.create({ title: formTitle.trim(), content: formContent.trim(), isPinned: formPinned })
@@ -35,27 +48,26 @@ export default function NoticesPage() {
     load()
   }
 
-  // 상세 보기
-  if (selected) {
+  if (detail && selectedId) {
     return (
       <div className="space-y-4">
-        <button onClick={() => setSelected(null)}
+        <button onClick={() => { setSelectedId(null); setDetail(null) }}
           className="text-sm px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">← 목록</button>
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
           <div className="flex items-center gap-2 mb-2">
-            {selected.isPinned && <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full">📌 고정</span>}
-            <h2 className="text-xl font-bold text-gray-800">{selected.title}</h2>
+            {detail.isPinned && <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full">📌 고정</span>}
+            <h2 className="text-xl font-bold text-gray-800">{detail.title}</h2>
           </div>
           <div className="flex gap-3 text-xs text-gray-400 mb-4">
-            <span>{selected.authorNickname}</span>
-            <span>{selected.createdAt.split('T')[0]}</span>
-            <span>조회 {selected.viewCount}</span>
+            <span>{detail.authorNickname}</span>
+            <span>{detail.createdAt.split('T')[0]}</span>
+            <span>조회 {detail.viewCount}</span>
           </div>
-          <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{selected.content}</div>
+          <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{detail.content}</div>
 
           {isAdmin && (
             <div className="flex gap-2 mt-6 pt-4 border-t border-gray-100">
-              <button onClick={async () => { await noticeApi.delete(selected.id); setSelected(null); load() }}
+              <button onClick={async () => { await noticeApi.delete(detail.id); setSelectedId(null); setDetail(null); load() }}
                 className="text-xs px-3 py-1.5 bg-red-100 text-red-500 rounded-lg hover:bg-red-200">삭제</button>
             </div>
           )}
@@ -64,7 +76,6 @@ export default function NoticesPage() {
     )
   }
 
-  // 작성 폼
   if (showForm) {
     return (
       <div className="space-y-4">
@@ -88,7 +99,6 @@ export default function NoticesPage() {
     )
   }
 
-  // 목록
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -103,9 +113,7 @@ export default function NoticesPage() {
         {notices.length === 0 ? (
           <div className="p-8 text-center text-gray-400">공지사항이 없습니다</div>
         ) : notices.map((n) => (
-          <div key={n.id} onClick={() => {
-            noticeApi.getById(n.id).then(setSelected).catch(() => {})
-          }}
+          <div key={n.id} onClick={() => setSelectedId(n.id)}
             className="px-5 py-4 cursor-pointer hover:bg-gray-50 transition-colors">
             <div className="flex items-center gap-2">
               {n.isPinned && <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full">📌 고정</span>}
