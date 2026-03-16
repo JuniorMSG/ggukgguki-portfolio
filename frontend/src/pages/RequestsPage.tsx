@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { requestApi } from '../api'
 import { useAuth } from '../contexts/AuthContext'
+
+// AuthContext에서 user 객체 대신 isAuthenticated/userId 사용
 import type { BoardRequest, BoardComment } from '../types'
 
 const CATEGORIES = [
@@ -34,7 +36,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 // ─── 상세 페이지 ───
 function RequestDetail({ id, onBack }: { id: number; onBack: () => void }) {
-  const { user } = useAuth()
+  const { isAuthenticated, userId } = useAuth()
   const [request, setRequest] = useState<BoardRequest | null>(null)
   const [comments, setComments] = useState<BoardComment[]>([])
   const [newComment, setNewComment] = useState('')
@@ -47,13 +49,13 @@ function RequestDetail({ id, onBack }: { id: number; onBack: () => void }) {
   useEffect(load, [id])
 
   const handleVote = async (voteType: string) => {
-    if (!user) return
+    if (!isAuthenticated) return
     const updated = await requestApi.vote(id, voteType)
     setRequest(updated)
   }
 
   const handleComment = async () => {
-    if (!newComment.trim() || !user) return
+    if (!newComment.trim() || !isAuthenticated) return
     await requestApi.createComment(id, newComment.trim())
     setNewComment('')
     load()
@@ -112,7 +114,7 @@ function RequestDetail({ id, onBack }: { id: number; onBack: () => void }) {
                   {c.authorNickname}
                 </span>
                 <span className="text-xs text-gray-400">{c.createdAt.split('T')[0]}</span>
-                {user && c.authorId === user.id && (
+                {isAuthenticated && c.authorId === userId && (
                   <button onClick={async () => { await requestApi.deleteComment(c.id); load() }}
                     className="text-xs text-gray-300 hover:text-red-400 ml-auto">삭제</button>
                 )}
@@ -123,7 +125,7 @@ function RequestDetail({ id, onBack }: { id: number; onBack: () => void }) {
           {comments.length === 0 && <p className="text-sm text-gray-400">아직 댓글이 없습니다</p>}
         </div>
 
-        {user && (
+        {isAuthenticated && (
           <div className="flex gap-2">
             <input type="text" value={newComment} onChange={(e) => setNewComment(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleComment()}
@@ -175,7 +177,7 @@ function RequestForm({ onCreated, onCancel }: { onCreated: () => void; onCancel:
 
 // ─── 메인 ───
 export default function RequestsPage() {
-  const { user } = useAuth()
+  const { isAuthenticated, userId } = useAuth()
   const [requests, setRequests] = useState<BoardRequest[]>([])
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -211,7 +213,7 @@ export default function RequestsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-800">요청사항</h2>
-        {user && (
+        {isAuthenticated && (
           <button onClick={() => setShowForm(true)}
             className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600">+ 새 요청</button>
         )}
