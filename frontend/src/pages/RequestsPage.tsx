@@ -36,10 +36,13 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 // ─── 상세 페이지 ───
 function RequestDetail({ id, onBack }: { id: number; onBack: () => void }) {
-  const { isAuthenticated, userId } = useAuth()
+  const { isAuthenticated, userId, isAdmin } = useAuth()
   const [request, setRequest] = useState<BoardRequest | null>(null)
   const [comments, setComments] = useState<BoardComment[]>([])
   const [newComment, setNewComment] = useState('')
+  const [editing, setEditing] = useState(false)
+  const [editTitle, setEditTitle] = useState('')
+  const [editContent, setEditContent] = useState('')
 
   const load = () => {
     requestApi.getById(id).then(setRequest).catch(() => {})
@@ -86,7 +89,7 @@ function RequestDetail({ id, onBack }: { id: number; onBack: () => void }) {
         <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap mb-6">{request.content}</div>
 
         {/* 좋아요/싫어요 */}
-        <div className="flex gap-3">
+        <div className="flex items-center gap-3">
           <button onClick={() => handleVote('LIKE')}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-colors ${
               request.myVote === 'LIKE' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-blue-50'
@@ -99,8 +102,60 @@ function RequestDetail({ id, onBack }: { id: number; onBack: () => void }) {
             }`}>
             👎 {request.dislikeCount}
           </button>
+
+          <div className="ml-auto flex gap-2">
+            {/* 본인 글: 수정/삭제 */}
+            {isAuthenticated && request.authorId === userId && (
+              <>
+                <button onClick={() => { setEditing(true); setEditTitle(request.title); setEditContent(request.content) }}
+                  className="text-xs px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">수정</button>
+                <button onClick={async () => { await requestApi.delete(id); onBack() }}
+                  className="text-xs px-3 py-1.5 bg-red-100 text-red-500 rounded-lg hover:bg-red-200">삭제</button>
+              </>
+            )}
+          </div>
         </div>
+
+        {/* 관리자: 상태 변경 */}
+        {isAdmin && (
+          <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
+            <span className="text-xs text-gray-400">상태 변경:</span>
+            {STATUSES.filter((s) => s.value).map((s) => (
+              <button key={s.value} onClick={async () => {
+                const updated = await requestApi.updateStatus(id, s.value)
+                setRequest(updated)
+              }}
+                className={`text-xs px-2.5 py-1 rounded-full transition-colors ${
+                  request.status === s.value
+                    ? STATUS_COLORS[s.value] + ' font-medium'
+                    : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                }`}>
+                {s.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* 수정 폼 */}
+      {editing && (
+        <div className="bg-white rounded-xl p-5 shadow-sm border-2 border-blue-200 space-y-3">
+          <h3 className="font-medium text-gray-700">요청 수정</h3>
+          <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+          <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} rows={5}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none" />
+          <div className="flex gap-2">
+            <button onClick={async () => {
+              const updated = await requestApi.update(id, { title: editTitle, content: editContent })
+              setRequest(updated)
+              setEditing(false)
+            }} className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600">저장</button>
+            <button onClick={() => setEditing(false)}
+              className="px-4 py-2 bg-gray-100 text-gray-500 text-sm rounded-lg hover:bg-gray-200">취소</button>
+          </div>
+        </div>
+      )}
 
       {/* 댓글 */}
       <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
