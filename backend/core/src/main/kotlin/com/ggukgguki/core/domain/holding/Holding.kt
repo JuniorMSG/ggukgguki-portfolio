@@ -35,6 +35,9 @@ class Holding(
     @Column(name = "avg_price", nullable = false, precision = 15, scale = 4)
     var avgPrice: BigDecimal = BigDecimal.ZERO,
 
+    @Column(length = 200)
+    var memo: String? = null,
+
     @Column(name = "created_at", nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
 

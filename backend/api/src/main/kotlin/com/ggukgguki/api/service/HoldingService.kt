@@ -32,6 +32,7 @@ class HoldingService(
         request.quantity?.let { holding.quantity = it }
         request.avgPrice?.let { holding.avgPrice = it }
         request.name?.let { holding.name = it }
+        request.memo?.let { holding.memo = it }
         holding.updatedAt = java.time.LocalDateTime.now()
         return HoldingResult.from(holdingRepository.save(holding))
     }
@@ -51,7 +52,8 @@ class HoldingService(
             name = request.name,
             currency = request.currency,
             quantity = request.quantity,
-            avgPrice = request.avgPrice
+            avgPrice = request.avgPrice,
+            memo = request.memo
         )
         return HoldingResult.from(holdingRepository.save(holding))
     }

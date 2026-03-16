@@ -6,7 +6,8 @@ import java.math.BigDecimal
 data class HoldingUpdateRequest(
     val quantity: BigDecimal? = null,
     val avgPrice: BigDecimal? = null,
-    val name: String? = null
+    val name: String? = null,
+    val memo: String? = null
 )
 
 data class HoldingCreateRequest(
@@ -16,7 +17,8 @@ data class HoldingCreateRequest(
     val name: String,
     val currency: String = "USD",
     val quantity: BigDecimal = BigDecimal.ZERO,
-    val avgPrice: BigDecimal = BigDecimal.ZERO
+    val avgPrice: BigDecimal = BigDecimal.ZERO,
+    val memo: String? = null
 )
 
 data class HoldingResult(
@@ -28,7 +30,8 @@ data class HoldingResult(
     val currency: String,
     val quantity: BigDecimal,
     val avgPrice: BigDecimal,
-    val totalAmount: BigDecimal
+    val totalAmount: BigDecimal,
+    val memo: String?
 ) {
     companion object {
         fun from(holding: Holding) = HoldingResult(
@@ -40,7 +43,8 @@ data class HoldingResult(
             currency = holding.currency,
             quantity = holding.quantity,
             avgPrice = holding.avgPrice,
-            totalAmount = holding.quantity.multiply(holding.avgPrice)
+            totalAmount = holding.quantity.multiply(holding.avgPrice),
+            memo = holding.memo
         )
     }
 }

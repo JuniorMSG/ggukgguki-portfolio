@@ -35,6 +35,7 @@ export interface Holding {
   quantity: number
   avgPrice: number
   totalAmount: number
+  memo: string | null
 }
 
 export interface CashAsset {

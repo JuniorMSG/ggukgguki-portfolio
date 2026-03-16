@@ -259,11 +259,12 @@ export default function AssetDetailPage() {
             <thead>
               <tr className="text-gray-400 text-xs border-b border-gray-200">
                 <th className="text-left py-2 font-medium">티커</th>
-                <th className="text-left py-2 font-medium">종목명</th>
-                <th className="text-right py-2 font-medium">수량</th>
+                <th className="text-left py-2 font-medium">종목명 ✏️</th>
+                <th className="text-right py-2 font-medium">수량 ✏️</th>
                 <th className="text-right py-2 font-medium">매수가</th>
-                <th className="text-right py-2 font-medium">매수금액</th>
-                <th className="text-right py-2 font-medium w-20"></th>
+                <th className="text-right py-2 font-medium">매수금액 ✏️</th>
+                <th className="text-left py-2 font-medium">메모 ✏️</th>
+                <th className="py-2 w-24"></th>
               </tr>
             </thead>
             <tbody>
