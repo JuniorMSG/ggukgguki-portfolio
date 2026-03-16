@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { accountApi, dcaApi, holdingApi } from '../api'
 import type { Account, AnnualLimit, DcaRecord, Holding } from '../types'
 import HoldingRow from '../components/HoldingRow'
+import MoneyInput from '../components/MoneyInput'
 
 const ACCOUNT_TYPE_LABEL: Record<string, string> = {
   PENSION_SAVINGS: '연금저축',
@@ -26,7 +27,7 @@ export default function AssetDetailPage() {
   const [editingAccount, setEditingAccount] = useState(false)
   const [editName, setEditName] = useState('')
   const [showAddHolding, setShowAddHolding] = useState(false)
-  const [newHolding, setNewHolding] = useState({ ticker: '', name: '', quantity: '', totalAmount: '', currency: 'KRW' })
+  const [newHolding, setNewHolding] = useState({ ticker: '', name: '', quantity: 0, totalAmount: 0, currency: 'KRW' })
 
   const thisYear = new Date().getFullYear()
 
@@ -213,9 +214,10 @@ export default function AssetDetailPage() {
         {showAddHolding && (
           <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
             {(() => {
-              const qty = Number(newHolding.quantity) || 0
-              const total = Number(newHolding.totalAmount) || 0
+              const qty = newHolding.quantity
+              const total = newHolding.totalAmount
               const avgPrice = qty > 0 ? Math.round((total / qty) * 100) / 100 : 0
+              const currSymbol = newHolding.currency === 'USD' ? '$' : '₩'
               return (
                 <>
                   <div className="grid grid-cols-5 gap-2">
@@ -223,10 +225,10 @@ export default function AssetDetailPage() {
                       placeholder="티커" className="border border-gray-200 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300" />
                     <input type="text" value={newHolding.name} onChange={(e) => setNewHolding({ ...newHolding, name: e.target.value })}
                       placeholder="종목명" className="border border-gray-200 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300" />
-                    <input type="number" value={newHolding.quantity} onChange={(e) => setNewHolding({ ...newHolding, quantity: e.target.value })}
-                      placeholder="수량" className="border border-gray-200 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300" />
-                    <input type="number" value={newHolding.totalAmount} onChange={(e) => setNewHolding({ ...newHolding, totalAmount: e.target.value })}
-                      placeholder="매수금액" className="border border-gray-200 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300" />
+                    <MoneyInput value={qty} onChange={(v) => setNewHolding({ ...newHolding, quantity: v })}
+                      placeholder="수량" className="!rounded !px-2 !py-1.5 !text-sm" />
+                    <MoneyInput value={total} onChange={(v) => setNewHolding({ ...newHolding, totalAmount: v })}
+                      placeholder="매수금액" className="!rounded !px-2 !py-1.5 !text-sm" />
                     <select value={newHolding.currency} onChange={(e) => setNewHolding({ ...newHolding, currency: e.target.value })}
                       className="border border-gray-200 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300">
                       <option value="KRW">KRW</option>
@@ -234,7 +236,7 @@ export default function AssetDetailPage() {
                     </select>
                   </div>
                   {qty > 0 && total > 0 && (
-                    <p className="text-xs text-gray-400">매수가: {newHolding.currency === 'USD' ? '$' : '₩'}{avgPrice.toLocaleString()}</p>
+                    <p className="text-xs text-gray-400">매수가: {currSymbol}{avgPrice.toLocaleString()}</p>
                   )}
                   <button onClick={async () => {
                     if (!newHolding.ticker || !newHolding.name) return
@@ -242,7 +244,7 @@ export default function AssetDetailPage() {
                       accountId, assetClassId: 11, ticker: newHolding.ticker, name: newHolding.name,
                       currency: newHolding.currency, quantity: qty, avgPrice
                     })
-                    setNewHolding({ ticker: '', name: '', quantity: '', totalAmount: '', currency: 'KRW' })
+                    setNewHolding({ ticker: '', name: '', quantity: 0, totalAmount: 0, currency: 'KRW' })
                     setShowAddHolding(false)
                     setRefreshKey((k) => k + 1)
                   }} className="text-xs px-4 py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600">추가</button>

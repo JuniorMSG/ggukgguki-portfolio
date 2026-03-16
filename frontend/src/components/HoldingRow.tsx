@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { holdingApi } from '../api'
 import type { Holding } from '../types'
+import MoneyInput from './MoneyInput'
 
 export default function HoldingRow({ h, onUpdated }: { h: Holding; onUpdated: () => void }) {
   const [editing, setEditing] = useState(false)
@@ -26,15 +27,13 @@ export default function HoldingRow({ h, onUpdated }: { h: Holding; onUpdated: ()
         <td className="py-2 font-mono text-gray-600 text-sm">{h.ticker}</td>
         <td className="py-2 text-gray-500 text-sm">{h.name}</td>
         <td className="py-2 text-right">
-          <input type="number" value={qty} onChange={(e) => setQty(Number(e.target.value))}
-            className="border border-blue-300 rounded px-2 py-1 text-sm w-20 text-right focus:outline-none" />
+          <MoneyInput value={qty} onChange={setQty} className="!w-20 !text-right !py-1 !px-2 !text-sm !border-blue-300" />
         </td>
         <td className="py-2 text-right text-sm text-gray-400">
           {qty > 0 && totalAmount > 0 ? `${curr}${avgPrice.toLocaleString()}` : '-'}
         </td>
         <td className="py-2 text-right">
-          <input type="number" value={totalAmount} onChange={(e) => setTotalAmount(Number(e.target.value))}
-            className="border border-blue-300 rounded px-2 py-1 text-sm w-28 text-right focus:outline-none" />
+          <MoneyInput value={totalAmount} onChange={setTotalAmount} className="!w-28 !text-right !py-1 !px-2 !text-sm !border-blue-300" />
         </td>
         <td className="py-2 text-right whitespace-nowrap">
           <button onClick={handleSave} disabled={saving}
