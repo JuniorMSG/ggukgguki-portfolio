@@ -109,26 +109,25 @@ export default function AssetDetailPage() {
       {/* 요약 카드 */}
       <div className="grid grid-cols-5 gap-3">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-          <p className="text-xs text-gray-400">총 투자금</p>
-          <p className="text-lg font-bold text-blue-600">{totalInvested.toLocaleString()}원</p>
+          <p className="text-xs text-gray-400">현재총액</p>
+          <p className="text-lg font-bold text-gray-400">-</p>
+          <p className="text-xs text-gray-300">현재가 연동 후</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
           <p className="text-xs text-gray-400">매수총액</p>
           <p className="text-lg font-bold text-gray-800">{curr}{Math.round(holdingTotal).toLocaleString()}</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+          <p className="text-xs text-gray-400">총 투자금</p>
+          <p className="text-lg font-bold text-blue-600">{totalInvested.toLocaleString()}원</p>
+        </div>
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
           <p className="text-xs text-gray-400">현금</p>
           <p className="text-lg font-bold text-green-600">{(totalInvested - Math.round(holdingTotal)).toLocaleString()}원</p>
-          <p className="text-xs text-gray-300">투자금 - 매수총액</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
           <p className="text-xs text-gray-400">보유종목</p>
           <p className="text-lg font-bold text-gray-600">{holdings.length}종목</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-          <p className="text-xs text-gray-400">수익률</p>
-          <p className="text-lg font-bold text-gray-400">-</p>
-          <p className="text-xs text-gray-300">현재가 연동 후</p>
         </div>
       </div>
 
