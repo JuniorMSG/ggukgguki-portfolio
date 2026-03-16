@@ -140,7 +140,6 @@ export default function DcaPage() {
                   <th className="py-2 text-left font-medium">계좌</th>
                   <th className="py-2 text-left font-medium">메모</th>
                   <th className="py-2 text-right font-medium">금액</th>
-                  <th className="py-2 w-24"></th>
                 </tr>
               </thead>
               <tbody>
@@ -160,11 +159,9 @@ export default function DcaPage() {
                           <input type="text" value={editData.memo} onChange={(e) => setEditData({ ...editData, memo: e.target.value })}
                             className="border border-blue-300 rounded px-1.5 py-0.5 text-xs w-full focus:outline-none" />
                         </td>
-                        <td className="py-1.5 text-right">
-                          <input type="number" value={editData.amount} onChange={(e) => setEditData({ ...editData, amount: e.target.value })}
-                            className="border border-blue-300 rounded px-1.5 py-0.5 text-xs w-24 text-right focus:outline-none" />
-                        </td>
                         <td className="py-1.5 text-right whitespace-nowrap">
+                          <input type="number" value={editData.amount} onChange={(e) => setEditData({ ...editData, amount: e.target.value })}
+                            className="border border-blue-300 rounded px-1.5 py-0.5 text-xs w-24 text-right focus:outline-none mr-2" />
                           <button onClick={async () => {
                             await dcaApi.update(r.id, { accountId: editData.accountId, amount: Number(editData.amount), memo: editData.memo })
                             setEditingId(null); setRefreshKey((k) => k + 1)
@@ -186,7 +183,6 @@ export default function DcaPage() {
                       <td className={`py-1.5 text-right font-medium ${r.amount < 0 ? 'text-red-500' : 'text-gray-700'}`}>
                         {r.amount.toLocaleString()}원
                       </td>
-                      <td className="py-1.5 text-right"><span className="text-xs text-gray-300">수정</span></td>
                     </tr>
                   )
                 })}
