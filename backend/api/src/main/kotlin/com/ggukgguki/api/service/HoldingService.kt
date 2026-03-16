@@ -55,4 +55,10 @@ class HoldingService(
         )
         return HoldingResult.from(holdingRepository.save(holding))
     }
+
+    @Transactional
+    fun delete(id: Long, userId: Long) {
+        ownershipChecker.checkHoldingOwner(id, userId)
+        holdingRepository.deleteById(id)
+    }
 }

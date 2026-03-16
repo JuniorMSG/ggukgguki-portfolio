@@ -38,4 +38,10 @@ class HoldingController(
         @RequestBody request: HoldingUpdateRequest,
         @AuthenticationPrincipal userId: Long
     ): HoldingResult = holdingService.update(id, request, userId)
+
+    @Operation(summary = "보유 종목 삭제")
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun delete(@PathVariable id: Long, @AuthenticationPrincipal userId: Long) =
+        holdingService.delete(id, userId)
 }

@@ -38,6 +38,8 @@ export default function HoldingRow({ h, onUpdated }: { h: Holding; onUpdated: ()
         <td className="py-2 text-right whitespace-nowrap">
           <button onClick={handleSave} disabled={saving}
             className="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 mr-1">저장</button>
+          <button onClick={async () => { await holdingApi.delete(h.id); onUpdated() }}
+            className="text-xs px-2 py-1 bg-red-100 text-red-500 rounded hover:bg-red-200 mr-1">삭제</button>
           <button onClick={() => { setQty(h.quantity); setTotalAmount(Math.round(h.quantity * h.avgPrice)); setEditing(false) }}
             className="text-xs px-2 py-1 bg-gray-100 text-gray-500 rounded hover:bg-gray-200">취소</button>
         </td>

@@ -241,6 +241,9 @@ export const holdingApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     }),
+
+  delete: (id: number) =>
+    fetchVoid(`${BASE}/holdings/${id}`, { method: 'DELETE' }),
 }
 
 export const cashflowApi = {
