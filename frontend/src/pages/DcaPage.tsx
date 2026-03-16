@@ -30,7 +30,7 @@ export default function DcaPage() {
   const accountName = (id: number) => accounts.find((a) => a.id === id)?.name || `계좌${id}`
 
   // 연도 목록
-  const years = [...new Set(allRecords.map((r) => new Date(r.recordDate).getFullYear()))].sort()
+  const years = [...new Set(allRecords.map((r) => new Date(r.recordDate).getFullYear()))].sort((a, b) => b - a)
 
   // 연도별 계좌별 합산
   const yearSummary = years.map((year) => {
@@ -65,7 +65,7 @@ export default function DcaPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-gray-800">DCA 적립식 투자</h2>
+      <h2 className="text-xl font-bold text-gray-800">적립식 투자</h2>
 
       {/* 연도별 계좌 요약 */}
       {yearSummary.length > 0 && (
