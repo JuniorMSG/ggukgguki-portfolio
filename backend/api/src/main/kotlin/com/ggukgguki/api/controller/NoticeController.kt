@@ -27,8 +27,10 @@ class NoticeController(
 
     @Operation(summary = "공지사항 상세 (조회수 증가)")
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: Long): NoticeResult =
-        boardService.getNotice(id)
+    fun getById(@PathVariable id: Long, request: jakarta.servlet.http.HttpServletRequest): NoticeResult {
+        val viewerKey = request.remoteAddr ?: "anonymous"
+        return boardService.getNotice(id, viewerKey)
+    }
 
     @Operation(summary = "공지사항 작성 (관리자)")
     @PostMapping

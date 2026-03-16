@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import java.util.concurrent.ConcurrentHashMap
 
 @Service
 @Transactional(readOnly = true)
@@ -18,16 +19,34 @@ class BoardService(
     private val voteRepository: BoardVoteRepository,
     private val userRepository: UserRepository
 ) {
+    // 조회수 중복 방지: "타입:ID:유저IP/ID" → 마지막 조회 시간
+    private val viewCache = ConcurrentHashMap<String, Long>()
+    private val VIEW_COOLDOWN_MS = 10_000L // 10초 내 중복 조회 무시
+
+    private fun shouldCountView(type: String, id: Long, viewerKey: String): Boolean {
+        val key = "$type:$id:$viewerKey"
+        val now = System.currentTimeMillis()
+        val lastView = viewCache.put(key, now)
+        // 오래된 캐시 정리 (1000개 넘으면)
+        if (viewCache.size > 1000) {
+            viewCache.entries.removeIf { now - it.value > 60_000 }
+        }
+        return lastView == null || (now - lastView) > VIEW_COOLDOWN_MS
+    }
+
     // ─── 공지사항 ───
 
     fun getNotices(pageable: Pageable): Page<NoticeResult> =
         noticeRepository.findAllByOrderByIsPinnedDescCreatedAtDesc(pageable).map { NoticeResult.from(it) }
 
     @Transactional
-    fun getNotice(id: Long): NoticeResult {
+    fun getNotice(id: Long, viewerKey: String = "anonymous"): NoticeResult {
         val notice = noticeRepository.findById(id).orElseThrow { IllegalArgumentException("공지사항을 찾을 수 없어요: $id") }
-        notice.viewCount++
-        return NoticeResult.from(noticeRepository.save(notice))
+        if (shouldCountView("notice", id, viewerKey)) {
+            notice.viewCount++
+            noticeRepository.save(notice)
+        }
+        return NoticeResult.from(notice)
     }
 
     @Transactional
@@ -60,8 +79,10 @@ class BoardService(
     @Transactional
     fun getRequest(id: Long, userId: Long): RequestResult {
         val request = requestRepository.findById(id).orElseThrow { IllegalArgumentException("요청사항을 찾을 수 없어요: $id") }
-        request.viewCount++
-        requestRepository.save(request)
+        if (shouldCountView("request", id, userId.toString())) {
+            request.viewCount++
+            requestRepository.save(request)
+        }
         val myVote = voteRepository.findByRequestIdAndUserId(id, userId)?.voteType
         return RequestResult.from(request, myVote)
     }
