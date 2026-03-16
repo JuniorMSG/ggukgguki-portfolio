@@ -121,10 +121,21 @@ export default function AssetDetailPage() {
           <p className="text-xs text-gray-400">총 투자금</p>
           <p className="text-lg font-bold text-blue-600">{totalInvested.toLocaleString()}원</p>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-          <p className="text-xs text-gray-400">현금</p>
-          <p className="text-lg font-bold text-green-600">{(totalInvested - Math.round(holdingTotal)).toLocaleString()}원</p>
-        </div>
+        {(() => {
+          const cashInAccount = totalInvested - Math.round(holdingTotal)
+          return cashInAccount >= 0 ? (
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+              <p className="text-xs text-gray-400">현금</p>
+              <p className="text-lg font-bold text-green-600">{cashInAccount.toLocaleString()}원</p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+              <p className="text-xs text-gray-400">재투자 수익</p>
+              <p className="text-lg font-bold text-blue-600">{Math.abs(cashInAccount).toLocaleString()}원</p>
+              <p className="text-xs text-gray-300">배당/수익으로 추가 매수</p>
+            </div>
+          )
+        })()}
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
           <p className="text-xs text-gray-400">보유종목</p>
           <p className="text-lg font-bold text-gray-600">{holdings.length}종목</p>
