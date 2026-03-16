@@ -130,7 +130,7 @@ export default function AssetDetailPage() {
             </div>
           ) : (
             <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-              <p className="text-xs text-gray-400">재투자 수익</p>
+              <p className="text-xs text-gray-400">재투자 금액</p>
               <p className="text-lg font-bold text-blue-600">{Math.abs(cashInAccount).toLocaleString()}원</p>
               <p className="text-xs text-gray-300">배당/수익으로 추가 매수</p>
             </div>
