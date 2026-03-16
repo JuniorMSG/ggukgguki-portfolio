@@ -26,6 +26,7 @@ data class TokenResponse(
     val refreshToken: String,
     val userId: Long,
     val nickname: String,
+    val role: String = "USER",
     @Schema(description = "신규 유저 여부 (구글 로그인 시)")
     val isNewUser: Boolean = false
 )

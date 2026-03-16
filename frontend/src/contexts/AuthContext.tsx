@@ -5,6 +5,8 @@ interface AuthState {
   isAuthenticated: boolean
   userId: number | null
   nickname: string | null
+  role: string | null
+  isAdmin: boolean
   needsNickname: boolean
   login: (email: string, password: string) => Promise<void>
   signup: (email: string, password: string, nickname: string) => Promise<void>
@@ -19,27 +21,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [userId, setUserId] = useState<number | null>(null)
   const [nickname, setNickname] = useState<string | null>(null)
+  const [role, setRole] = useState<string | null>(null)
   const [needsNickname, setNeedsNickname] = useState(false)
+
+  const isAdmin = role === 'ADMIN'
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
     const savedUserId = localStorage.getItem('userId')
     const savedNickname = localStorage.getItem('nickname')
+    const savedRole = localStorage.getItem('role')
     if (token && savedUserId) {
       setIsAuthenticated(true)
       setUserId(Number(savedUserId))
       setNickname(savedNickname)
+      setRole(savedRole)
     }
   }, [])
 
-  const saveAuth = (res: { accessToken: string; refreshToken: string; userId: number; nickname: string }) => {
+  const saveAuth = (res: { accessToken: string; refreshToken: string; userId: number; nickname: string; role?: string }) => {
     localStorage.setItem('accessToken', res.accessToken)
     localStorage.setItem('refreshToken', res.refreshToken)
     localStorage.setItem('userId', String(res.userId))
     localStorage.setItem('nickname', res.nickname)
+    localStorage.setItem('role', res.role || 'USER')
     setIsAuthenticated(true)
     setUserId(res.userId)
     setNickname(res.nickname)
+    setRole(res.role || 'USER')
   }
 
   const login = async (email: string, password: string) => {
@@ -74,12 +83,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false)
     setUserId(null)
     setNickname(null)
+    setRole(null)
     setNeedsNickname(false)
   }
 
   return (
     <AuthContext.Provider value={{
-      isAuthenticated, userId, nickname, needsNickname,
+      isAuthenticated, userId, nickname, role, isAdmin, needsNickname,
       login, signup, googleLogin, setNickname: handleSetNickname, logout
     }}>
       {children}

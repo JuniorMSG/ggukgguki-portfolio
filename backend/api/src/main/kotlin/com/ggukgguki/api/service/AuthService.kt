@@ -105,6 +105,7 @@ class AuthService(
             refreshToken = jwtProvider.generateRefreshToken(user.id, user.email, user.nickname, user.role),
             userId = user.id,
             nickname = user.nickname,
+            role = user.role,
             isNewUser = isNewUser
         )
     }
