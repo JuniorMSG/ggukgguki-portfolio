@@ -1,4 +1,4 @@
-import type { Account, Allocation, AnnualLimit, AssetClass, CashAsset, CashflowCategory, CashflowRecord, DcaRecord, Holding, WeeklySnapshot } from '../types'
+import type { Account, Allocation, AnnualLimit, AssetClass, BoardComment, BoardRequest, CashAsset, CashflowCategory, CashflowRecord, DcaRecord, Holding, Notice, PageResponse, WeeklySnapshot } from '../types'
 
 const BASE = '/api'
 
@@ -272,4 +272,90 @@ export const snapshotApi = {
 
   getByYear: (year: number) =>
     fetchJson<WeeklySnapshot[]>(`${BASE}/snapshots?year=${year}`),
+}
+
+// ─── 게시판 ───
+
+export const noticeApi = {
+  getAll: (page = 0, size = 10) =>
+    fetchJson<PageResponse<Notice>>(`${BASE}/notices?page=${page}&size=${size}`),
+
+  getById: (id: number) =>
+    fetchJson<Notice>(`${BASE}/notices/${id}`),
+
+  create: (data: { title: string; content: string; isPinned?: boolean }) =>
+    fetchJson<Notice>(`${BASE}/notices`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: number, data: { title?: string; content?: string; isPinned?: boolean }) =>
+    fetchJson<Notice>(`${BASE}/notices/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: number) =>
+    fetchVoid(`${BASE}/notices/${id}`, { method: 'DELETE' }),
+}
+
+export const requestApi = {
+  getAll: (params?: { category?: string; status?: string; keyword?: string; page?: number; size?: number }) => {
+    const q = new URLSearchParams()
+    if (params?.category) q.set('category', params.category)
+    if (params?.status) q.set('status', params.status)
+    if (params?.keyword) q.set('keyword', params.keyword)
+    q.set('page', String(params?.page ?? 0))
+    q.set('size', String(params?.size ?? 10))
+    return fetchJson<PageResponse<BoardRequest>>(`${BASE}/requests?${q}`)
+  },
+
+  getById: (id: number) =>
+    fetchJson<BoardRequest>(`${BASE}/requests/${id}`),
+
+  create: (data: { title: string; content: string; category?: string }) =>
+    fetchJson<BoardRequest>(`${BASE}/requests`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: number, data: { title?: string; content?: string; category?: string }) =>
+    fetchJson<BoardRequest>(`${BASE}/requests/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: number) =>
+    fetchVoid(`${BASE}/requests/${id}`, { method: 'DELETE' }),
+
+  updateStatus: (id: number, status: string) =>
+    fetchJson<BoardRequest>(`${BASE}/requests/${id}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    }),
+
+  vote: (id: number, voteType: string) =>
+    fetchJson<BoardRequest>(`${BASE}/requests/${id}/vote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ voteType }),
+    }),
+
+  getComments: (id: number) =>
+    fetchJson<BoardComment[]>(`${BASE}/requests/${id}/comments`),
+
+  createComment: (id: number, content: string) =>
+    fetchJson<BoardComment>(`${BASE}/requests/${id}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content }),
+    }),
+
+  deleteComment: (commentId: number) =>
+    fetchVoid(`${BASE}/requests/comments/${commentId}`, { method: 'DELETE' }),
 }

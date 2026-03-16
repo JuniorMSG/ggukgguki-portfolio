@@ -20,6 +20,8 @@ import FreelancerCalcPage from './pages/FreelancerCalcPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import ProfilePage from './pages/ProfilePage'
+import NoticesPage from './pages/NoticesPage'
+import RequestsPage from './pages/RequestsPage'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
@@ -35,6 +37,8 @@ function AppRoutes() {
 
         {/* 공개 페이지 */}
         <Route path="/" element={<PublicLayout><LandingPage /></PublicLayout>} />
+        <Route path="/notices" element={<PublicLayoutWithSide><NoticesPage /></PublicLayoutWithSide>} />
+        <Route path="/requests" element={<PublicLayoutWithSide><RequestsPage /></PublicLayoutWithSide>} />
         <Route path="/calculator" element={<PublicLayoutWithSide><CalculatorPage /></PublicLayoutWithSide>} />
         <Route path="/calculator/tax" element={<PublicLayoutWithSide><TaxSimPage /></PublicLayoutWithSide>} />
         <Route path="/calculator/salary" element={<PublicLayoutWithSide><SalaryCalcPage /></PublicLayoutWithSide>} />

@@ -113,3 +113,54 @@ export interface DcaRecord {
   recordDate: string
   memo: string | null
 }
+
+// ─── 게시판 ───
+
+export interface Notice {
+  id: number
+  title: string
+  content: string
+  authorId: number
+  authorNickname: string
+  isPinned: boolean
+  viewCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type RequestCategory = 'FEATURE' | 'BUG' | 'IMPROVEMENT' | 'OTHER'
+export type RequestStatus = 'SUBMITTED' | 'REVIEWING' | 'IN_PROGRESS' | 'DONE' | 'ON_HOLD'
+
+export interface BoardRequest {
+  id: number
+  title: string
+  content: string
+  authorId: number
+  authorNickname: string
+  category: RequestCategory
+  status: RequestStatus
+  likeCount: number
+  dislikeCount: number
+  viewCount: number
+  createdAt: string
+  updatedAt: string
+  myVote: string | null
+}
+
+export interface BoardComment {
+  id: number
+  requestId: number
+  authorId: number
+  authorNickname: string
+  content: string
+  isAdminReply: boolean
+  createdAt: string
+}
+
+export interface PageResponse<T> {
+  content: T[]
+  totalElements: number
+  totalPages: number
+  number: number
+  size: number
+}
