@@ -1,6 +1,7 @@
 package com.ggukgguki.api.service
 
 import com.ggukgguki.api.dto.AccountCreateRequest
+import com.ggukgguki.api.dto.AccountUpdateRequest
 import com.ggukgguki.api.dto.AccountResult
 import com.ggukgguki.api.dto.AnnualLimitRequest
 import com.ggukgguki.api.dto.AnnualLimitResult
@@ -42,6 +43,28 @@ class AccountService(
             annualLimit = request.annualLimit
         )
         return AccountResult.from(accountRepository.save(account))
+    }
+
+    @Transactional
+    fun update(id: Long, request: AccountUpdateRequest, userId: Long): AccountResult {
+        ownershipChecker.checkAccountOwner(id, userId)
+        val account = accountRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("계좌를 찾을 수 없어요: $id") }
+        request.name?.let { account.name = it }
+        request.accountType?.let { account.accountType = it }
+        request.annualLimit?.let { account.annualLimit = it }
+        account.updatedAt = java.time.LocalDateTime.now()
+        return AccountResult.from(accountRepository.save(account))
+    }
+
+    @Transactional
+    fun delete(id: Long, userId: Long) {
+        ownershipChecker.checkAccountOwner(id, userId)
+        val account = accountRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("계좌를 찾을 수 없어요: $id") }
+        account.isActive = false
+        account.updatedAt = java.time.LocalDateTime.now()
+        accountRepository.save(account)
     }
 
     fun getLimits(accountId: Long, userId: Long): List<AnnualLimitResult> {

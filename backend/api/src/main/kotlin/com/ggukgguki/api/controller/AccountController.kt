@@ -1,6 +1,7 @@
 package com.ggukgguki.api.controller
 
 import com.ggukgguki.api.dto.AccountCreateRequest
+import com.ggukgguki.api.dto.AccountUpdateRequest
 import com.ggukgguki.api.dto.AccountResult
 import com.ggukgguki.api.dto.AnnualLimitRequest
 import com.ggukgguki.api.dto.AnnualLimitResult
@@ -32,6 +33,20 @@ class AccountController(
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody request: AccountCreateRequest, @AuthenticationPrincipal userId: Long): AccountResult =
         accountService.create(request, userId)
+
+    @Operation(summary = "계좌 수정", description = "계좌명, 유형, 한도를 수정합니다")
+    @PutMapping("/{id}")
+    fun update(
+        @PathVariable id: Long,
+        @RequestBody request: AccountUpdateRequest,
+        @AuthenticationPrincipal userId: Long
+    ): AccountResult = accountService.update(id, request, userId)
+
+    @Operation(summary = "계좌 삭제 (비활성화)")
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun delete(@PathVariable id: Long, @AuthenticationPrincipal userId: Long) =
+        accountService.delete(id, userId)
 
     @Operation(summary = "계좌 연도별 한도 조회")
     @GetMapping("/{id}/limits")

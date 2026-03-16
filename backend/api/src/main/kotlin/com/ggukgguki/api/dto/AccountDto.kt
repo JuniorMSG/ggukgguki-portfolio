@@ -14,6 +14,13 @@ data class AccountCreateRequest(
     val annualLimit: Long? = null
 )
 
+@Schema(description = "계좌 수정 요청")
+data class AccountUpdateRequest(
+    val name: String? = null,
+    val accountType: AccountType? = null,
+    val annualLimit: Long? = null
+)
+
 @Schema(description = "계좌 정보")
 data class AccountResult(
     val id: Long,

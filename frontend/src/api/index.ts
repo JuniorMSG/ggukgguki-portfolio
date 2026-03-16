@@ -160,6 +160,16 @@ export const accountApi = {
       body: JSON.stringify(data),
     }),
 
+  update: (id: number, data: { name?: string; accountType?: string; annualLimit?: number }) =>
+    fetchJson<Account>(`${BASE}/accounts/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: number) =>
+    fetchVoid(`${BASE}/accounts/${id}`, { method: 'DELETE' }),
+
   getLimits: (accountId: number) =>
     fetchJson<AnnualLimit[]>(`${BASE}/accounts/${accountId}/limits`),
 
