@@ -23,6 +23,8 @@ export default function AssetDetailPage() {
   const [limits, setLimits] = useState<AnnualLimit[]>([])
   const [refreshKey, setRefreshKey] = useState(0)
   const [editingLimit, setEditingLimit] = useState<{ year: number; value: string } | null>(null)
+  const [editingAccount, setEditingAccount] = useState(false)
+  const [editName, setEditName] = useState('')
 
   const thisYear = new Date().getFullYear()
 
@@ -71,10 +73,34 @@ export default function AssetDetailPage() {
           className="text-sm px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">
           ← 돌아가기
         </button>
-        <h2 className="text-xl font-bold text-gray-800">{account.name}</h2>
-        <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full">
-          {ACCOUNT_TYPE_LABEL[account.accountType]}
-        </span>
+        {editingAccount ? (
+          <>
+            <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)}
+              className="text-xl font-bold text-gray-800 border border-blue-300 rounded-lg px-2 py-1 focus:outline-none" />
+            <button onClick={async () => {
+              await accountApi.update(accountId, { name: editName })
+              setEditingAccount(false)
+              setRefreshKey((k) => k + 1)
+            }} className="text-xs px-2 py-1 bg-blue-500 text-white rounded">저장</button>
+            <button onClick={() => setEditingAccount(false)}
+              className="text-xs px-2 py-1 bg-gray-100 text-gray-400 rounded">취소</button>
+          </>
+        ) : (
+          <>
+            <h2 className="text-xl font-bold text-gray-800">{account.name}</h2>
+            <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full">
+              {ACCOUNT_TYPE_LABEL[account.accountType]}
+            </span>
+            <button onClick={() => { setEditingAccount(true); setEditName(account.name) }}
+              className="text-xs px-2 py-1 bg-gray-50 text-gray-400 rounded hover:bg-gray-100">수정</button>
+            <button onClick={async () => {
+              if (!confirm('이 계좌를 삭제할까요?')) return
+              await accountApi.delete(accountId)
+              navigate('/assets')
+            }}
+              className="text-xs px-2 py-1 bg-red-50 text-red-400 rounded hover:bg-red-100">삭제</button>
+          </>
+        )}
       </div>
 
       {/* 요약 카드 */}
