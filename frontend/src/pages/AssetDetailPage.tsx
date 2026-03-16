@@ -262,8 +262,8 @@ export default function AssetDetailPage() {
                 <th className="text-left py-2 font-medium">종목명<span className="text-red-400">*</span></th>
                 <th className="text-right py-2 font-medium">수량<span className="text-red-400">*</span></th>
                 <th className="text-right py-2 font-medium">매수가</th>
-                <th className="text-right py-2 font-medium pr-4">매수금액<span className="text-red-400">*</span></th>
-                <th className="text-left py-2 font-medium pl-4">메모<span className="text-red-400">*</span></th>
+                <th className="text-right py-2 font-medium">매수금액<span className="text-red-400">*</span></th>
+                <th className="text-left py-2 font-medium pl-8">메모<span className="text-red-400">*</span></th>
                 <th className="py-2 w-24"></th>
               </tr>
             </thead>

@@ -50,7 +50,7 @@ export default function HoldingRow({ h, onUpdated }: { h: Holding; onUpdated: ()
         <td className="py-2 text-right">
           <MoneyInput value={totalAmount} onChange={setTotalAmount} className="!w-28 !text-right !py-1 !px-2 !text-sm !border-blue-300" />
         </td>
-        <td className="py-2">
+        <td className="py-2 pl-8">
           <input type="text" value={memo} onChange={(e) => setMemo(e.target.value)}
             placeholder="메모" className="border border-blue-300 rounded px-2 py-1 text-sm w-full focus:outline-none" />
         </td>
@@ -73,7 +73,7 @@ export default function HoldingRow({ h, onUpdated }: { h: Holding; onUpdated: ()
       <td className="py-2 text-right text-sm text-gray-600">{h.quantity > 0 ? h.quantity.toLocaleString() : '-'}</td>
       <td className="py-2 text-right text-sm text-gray-500">{h.avgPrice > 0 ? `${curr}${h.avgPrice.toLocaleString()}` : '-'}</td>
       <td className="py-2 text-right text-sm text-gray-700 font-medium">{h.totalAmount > 0 ? `${curr}${Math.round(h.totalAmount).toLocaleString()}` : '-'}</td>
-      <td className="py-2 text-gray-400 text-xs">{h.memo || ''}</td>
+      <td className="py-2 text-gray-400 text-xs pl-8">{h.memo || ''}</td>
       <td></td>
     </tr>
   )
