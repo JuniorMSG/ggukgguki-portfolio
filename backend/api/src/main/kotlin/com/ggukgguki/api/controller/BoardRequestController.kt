@@ -68,8 +68,9 @@ class BoardRequestController(
     @PreAuthorize("hasRole('ADMIN')")
     fun updateStatus(
         @PathVariable id: Long,
-        @RequestBody req: StatusUpdateDto
-    ): RequestResult = boardService.updateStatus(id, req.status)
+        @RequestBody req: StatusUpdateDto,
+        @AuthenticationPrincipal userId: Long
+    ): RequestResult = boardService.updateStatus(id, req.status, userId)
 
     @Operation(summary = "좋아요/싫어요 (토글)")
     @PostMapping("/{id}/vote")

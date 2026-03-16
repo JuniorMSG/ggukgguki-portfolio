@@ -102,7 +102,9 @@ class BoardService(
         req.content?.let { request.content = it }
         req.category?.let { request.category = it }
         request.updatedAt = LocalDateTime.now()
-        return RequestResult.from(requestRepository.save(request))
+        requestRepository.save(request)
+        val myVote = voteRepository.findByRequestIdAndUserId(id, userId)?.voteType
+        return RequestResult.from(request, myVote)
     }
 
     @Transactional
@@ -113,11 +115,13 @@ class BoardService(
     }
 
     @Transactional
-    fun updateStatus(id: Long, status: String): RequestResult {
+    fun updateStatus(id: Long, status: String, userId: Long): RequestResult {
         val request = requestRepository.findById(id).orElseThrow { IllegalArgumentException("요청사항을 찾을 수 없어요: $id") }
         request.status = status
         request.updatedAt = LocalDateTime.now()
-        return RequestResult.from(requestRepository.save(request))
+        requestRepository.save(request)
+        val myVote = voteRepository.findByRequestIdAndUserId(id, userId)?.voteType
+        return RequestResult.from(request, myVote)
     }
 
     // ─── 투표 ───
