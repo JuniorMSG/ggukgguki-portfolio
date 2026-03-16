@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { accountApi, dcaApi } from '../api'
+import MoneyInput from '../components/MoneyInput'
 import type { Account, DcaRecord } from '../types'
 import DcaForm from '../components/DcaForm'
 
@@ -160,8 +161,8 @@ export default function DcaPage() {
                             className="border border-blue-300 rounded px-1.5 py-0.5 text-xs w-full focus:outline-none" />
                         </td>
                         <td className="py-1.5 text-right whitespace-nowrap">
-                          <input type="number" value={editData.amount} onChange={(e) => setEditData({ ...editData, amount: e.target.value })}
-                            className="border border-blue-300 rounded px-1.5 py-0.5 text-xs w-24 text-right focus:outline-none mr-2" />
+                          <MoneyInput value={Number(editData.amount)} onChange={(v) => setEditData({ ...editData, amount: String(v) })}
+                            className="!border-blue-300 !rounded !px-1.5 !py-0.5 !text-xs w-28 text-right mr-2" />
                           <button onClick={async () => {
                             await dcaApi.update(r.id, { accountId: editData.accountId, amount: Number(editData.amount), memo: editData.memo })
                             setEditingId(null); setRefreshKey((k) => k + 1)

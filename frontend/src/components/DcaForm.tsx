@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { accountApi, dcaApi } from '../api'
 import type { Account } from '../types'
+import MoneyInput from './MoneyInput'
 
 interface Props {
   onCreated: () => void
@@ -9,7 +10,7 @@ interface Props {
 export default function DcaForm({ onCreated }: Props) {
   const [accounts, setAccounts] = useState<Account[]>([])
   const [accountId, setAccountId] = useState<number>(0)
-  const [amount, setAmount] = useState<string>('1000000')
+  const [amount, setAmount] = useState<number>(1000000)
   const [recordDate, setRecordDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   )
@@ -31,7 +32,7 @@ export default function DcaForm({ onCreated }: Props) {
     try {
       await dcaApi.create({
         accountId,
-        amount: Number(amount),
+        amount,
         recordDate,
         memo: memo || undefined,
       })
@@ -62,12 +63,7 @@ export default function DcaForm({ onCreated }: Props) {
 
         <div>
           <label className="block text-sm text-gray-500 mb-1">금액 (원)</label>
-          <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-          />
+          <MoneyInput value={amount} onChange={setAmount} className="w-full" />
         </div>
 
         <div>
